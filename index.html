@@ -1,0 +1,5418 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AI租房功能原型</title>
+  <style>
+    :root{
+      --primary:#246BFD;
+      --primary-weak:#EEF4FF;
+      --text:#172033;
+      --muted:#7A8498;
+      --line:#E7EAF0;
+      --bg:#F5F7FA;
+      --card:#FFFFFF;
+      --success:#16A36A;
+      --warn:#F59E0B;
+      --danger:#E5484D;
+      --shadow:0 10px 30px rgba(30,42,70,.08);
+      --radius:16px;
+    }
+    *{box-sizing:border-box}
+    body{
+      margin:0;
+      font-family:"Microsoft YaHei","PingFang SC",system-ui,-apple-system,sans-serif;
+      color:var(--text);
+      background:var(--bg);
+    }
+    button,input,select{font:inherit}
+    .topbar{
+      position:sticky; top:0; z-index:20;
+      background:rgba(255,255,255,.92);
+      backdrop-filter:blur(14px);
+      border-bottom:1px solid var(--line);
+    }
+    .topbar-inner{
+      max-width:1440px; margin:auto;
+      height:72px; padding:0 28px;
+      display:flex; align-items:center; justify-content:space-between;
+    }
+    .brand{display:flex; align-items:center; gap:12px; font-weight:800; font-size:22px}
+    .brand-mark{
+      width:38px;height:38px;border-radius:12px;
+      display:grid;place-items:center;
+      color:#fff;background:linear-gradient(135deg,#246BFD,#6B8EFF);
+      box-shadow:0 8px 18px rgba(36,107,253,.25);
+    }
+    .page-label{color:var(--muted);font-size:14px}
+    .wrap{
+      max-width:1440px; margin:28px auto; padding:0 28px 36px;
+      display:grid; grid-template-columns:minmax(0,1fr) 330px; gap:22px;
+    }
+    .panel{
+      background:var(--card); border:1px solid var(--line);
+      border-radius:var(--radius); box-shadow:var(--shadow);
+    }
+    .main-panel{padding:26px}
+    .summary-panel{
+      padding:22px; height:max-content; position:sticky; top:94px;
+    }
+    .search-row{
+      display:grid; grid-template-columns:1fr auto auto; gap:12px;
+      margin-bottom:24px;
+    }
+    .searchbox{
+      position:relative;
+    }
+    .searchbox input{
+      width:100%; height:52px; padding:0 18px 0 46px;
+      border:1px solid var(--line); border-radius:12px;
+      outline:none; transition:.2s; background:#fff;
+    }
+    .searchbox input:focus{border-color:var(--primary);box-shadow:0 0 0 4px var(--primary-weak)}
+    .search-icon{
+      position:absolute; left:16px; top:50%; transform:translateY(-50%);
+      color:var(--muted); font-size:20px;
+    }
+    .primary-btn,.ghost-btn{
+      height:52px; border-radius:12px; padding:0 22px; cursor:pointer;
+      border:1px solid transparent; font-weight:700;
+    }
+    .primary-btn{background:var(--primary);color:#fff}
+    .primary-btn:hover{filter:brightness(.97)}
+    .ghost-btn{background:#fff;border-color:var(--line);color:var(--text)}
+    .ai-btn{
+      height:52px;border:0;border-radius:12px;padding:0 22px;cursor:pointer;
+      color:#fff;font-weight:800;
+      background:linear-gradient(135deg,#7C3AED,#246BFD);
+      box-shadow:0 8px 18px rgba(92,73,220,.22);
+    }
+    .ai-btn:hover{filter:brightness(.97)}
+    .section{
+      border-top:1px solid var(--line); padding:22px 0;
+    }
+    .section:first-of-type{border-top:0;padding-top:0}
+    .section-head{
+      display:flex; align-items:center; justify-content:space-between;
+      margin-bottom:14px;
+    }
+    .section-title{font-size:16px;font-weight:800}
+    .section-note{font-size:12px;color:var(--muted)}
+    .tab-row{
+      display:flex; flex-wrap:wrap; gap:8px; margin-bottom:14px;
+    }
+    .tab,.chip{
+      border:1px solid var(--line); background:#fff; color:var(--text);
+      border-radius:999px; padding:9px 14px; cursor:pointer; transition:.18s;
+    }
+    .tab:hover,.chip:hover{border-color:#B9C9F8}
+    .tab.active,.chip.active{
+      color:var(--primary); border-color:var(--primary); background:var(--primary-weak);
+      font-weight:700;
+    }
+    .option-grid{
+      display:flex; flex-wrap:wrap; gap:10px 10px;
+    }
+    .option{
+      position:relative;
+    }
+    .option input{position:absolute;opacity:0;pointer-events:none}
+    .option label{
+      display:inline-flex; align-items:center; min-height:38px;
+      border:1px solid var(--line); border-radius:10px; padding:8px 12px;
+      cursor:pointer; transition:.18s; background:#fff;
+    }
+    .option input:checked + label{
+      border-color:var(--primary); background:var(--primary-weak); color:var(--primary);
+      font-weight:700;
+    }
+    .inline-inputs{
+      display:flex; align-items:center; gap:10px; flex-wrap:wrap; margin-top:12px;
+    }
+    .small-input{
+      width:130px;height:40px;border:1px solid var(--line);border-radius:10px;
+      padding:0 12px;outline:none;
+    }
+    .small-input:focus{border-color:var(--primary);box-shadow:0 0 0 3px var(--primary-weak)}
+    .subgroup{margin-top:16px}
+    .subgroup-title{
+      font-size:13px;color:var(--muted);margin-bottom:9px;font-weight:700;
+    }
+    .collapsed{display:none}
+    .more-btn{
+      width:100%; height:44px; border:1px dashed #C7CDDA; border-radius:12px;
+      background:#FAFBFD; color:var(--primary); cursor:pointer; font-weight:700;
+    }
+    .footer-actions{
+      position:sticky; bottom:0;
+      background:linear-gradient(to top,#fff 70%,rgba(255,255,255,0));
+      padding-top:18px; display:flex; justify-content:flex-end; gap:10px;
+    }
+    .summary-title{font-size:18px;font-weight:800;margin-bottom:16px}
+    .count-box{
+      padding:18px;border-radius:14px;background:var(--primary-weak);margin-bottom:16px;
+    }
+    .count{font-size:32px;font-weight:900;color:var(--primary)}
+    .count-label{font-size:13px;color:var(--muted);margin-top:4px}
+    .selected-list{
+      display:flex;flex-wrap:wrap;gap:8px;min-height:36px;margin-bottom:16px;
+    }
+    .selected-tag{
+      display:inline-flex;align-items:center;gap:6px;
+      border-radius:999px;padding:7px 10px;background:#F2F4F8;font-size:12px;
+    }
+    .selected-tag button{
+      border:0;background:transparent;color:var(--muted);cursor:pointer;padding:0;
+    }
+    .empty{color:var(--muted);font-size:13px}
+    .hint-box{
+      border:1px solid #F8D9A4;background:#FFF8EB;border-radius:12px;padding:13px;
+      color:#8A5B08;font-size:13px;line-height:1.6;margin-top:10px;
+    }
+    .ok-box{
+      border:1px solid #BCE8D5;background:#EFFAF5;border-radius:12px;padding:13px;
+      color:#147A50;font-size:13px;line-height:1.6;margin-top:10px;
+    }
+    .summary-block{padding:16px 0;border-top:1px solid var(--line)}
+    .summary-block:first-of-type{border-top:0}
+    .summary-label{font-size:13px;color:var(--muted);margin-bottom:9px}
+    .switch-row{display:flex;align-items:center;justify-content:space-between;gap:12px}
+    .switch{
+      width:44px;height:24px;border-radius:999px;background:#CDD3DE;position:relative;cursor:pointer;
+      transition:.2s;flex-shrink:0;
+    }
+    .switch::after{
+      content:"";position:absolute;width:18px;height:18px;border-radius:50%;background:#fff;
+      top:3px;left:3px;box-shadow:0 2px 6px rgba(0,0,0,.18);transition:.2s;
+    }
+    .switch.on{background:var(--primary)}
+    .switch.on::after{left:23px}
+    .sort-select{
+      width:100%;height:42px;border:1px solid var(--line);border-radius:10px;padding:0 12px;
+      outline:none;background:#fff;
+    }
+    .sort-select:focus{border-color:var(--primary)}
+    .location-content{display:none}
+    .location-content.active{display:block}
+    @media (max-width: 980px){
+      .wrap{grid-template-columns:1fr}
+      .summary-panel{position:static}
+    }
+    @media (max-width: 640px){
+      .topbar-inner,.wrap{padding-left:16px;padding-right:16px}
+      .main-panel{padding:18px}
+      .search-row{grid-template-columns:1fr}
+      .primary-btn{width:100%}
+      .small-input{width:110px}
+      .page-label{display:none}
+    }
+  </style>
+
+  <style id="competitor-layout-overrides">
+    /* 竞品式横向筛选布局：左侧条件名，右侧选项 */
+    body{
+      background:#f5f6f8;
+    }
+    .wrap{
+      max-width:1560px;
+      grid-template-columns:1fr;
+      gap:16px;
+      margin-top:24px;
+    }
+    .panel{
+      border-radius:0;
+      box-shadow:none;
+      border:1px solid #e5e8ee;
+    }
+    .main-panel{
+      padding:24px 28px 18px;
+    }
+
+    .section{
+      display:grid;
+      grid-template-columns:118px minmax(0,1fr);
+      column-gap:22px;
+      row-gap:10px;
+      align-items:start;
+      padding:15px 0;
+      border-top:1px solid #edf0f4;
+    }
+    .section:first-of-type{
+      padding-top:4px;
+    }
+    .section-head{
+      grid-column:1;
+      display:block;
+      margin:0;
+      padding-top:4px;
+    }
+    .section-title{
+      font-size:15px;
+      line-height:28px;
+      font-weight:800;
+      color:#202736;
+      white-space:nowrap;
+    }
+    .section-note{
+      margin-top:4px;
+      font-size:11px;
+      line-height:1.5;
+      color:#9aa2b1;
+    }
+
+    .section > .tab-row,
+    .section > .option-grid,
+    .section > .location-content,
+    .section > .inline-inputs,
+    .section > .subgroup{
+      grid-column:2;
+    }
+    .section > .tab-row{
+      margin:0 0 4px;
+    }
+    .location-content{
+      margin-top:0;
+    }
+
+    /* 二级条件仍采用“名称在左、选项在右” */
+    .subgroup{
+      display:grid;
+      grid-template-columns:92px minmax(0,1fr);
+      column-gap:16px;
+      align-items:start;
+      margin-top:8px;
+    }
+    .subgroup-title{
+      grid-column:1;
+      margin:0;
+      padding-top:5px;
+      font-size:14px;
+      line-height:28px;
+      font-weight:800;
+      color:#303746;
+      white-space:nowrap;
+    }
+    .subgroup > .option-grid,
+    .subgroup > .inline-inputs{
+      grid-column:2;
+      margin:0;
+    }
+
+    /* 选项改为竞品式文字排列，不使用胶囊按钮 */
+    .option-grid{
+      gap:5px 20px;
+      align-items:center;
+    }
+    .option label{
+      position:relative;
+      min-height:30px;
+      padding:4px 2px 4px 25px;
+      border:0;
+      border-radius:0;
+      background:transparent;
+      color:#253047;
+      font-size:14px;
+      line-height:22px;
+      font-weight:400;
+      white-space:nowrap;
+    }
+    .option label:hover{
+      color:var(--primary);
+    }
+    .option input:checked + label{
+      border:0;
+      background:transparent;
+      color:var(--primary);
+      font-weight:400;
+    }
+
+    /* 多选方框：未选为空框，选中后填充 */
+    .option input[type="checkbox"] + label::before{
+      content:"";
+      position:absolute;
+      left:1px;
+      top:50%;
+      width:15px;
+      height:15px;
+      transform:translateY(-50%);
+      border:1px solid #c7ccd5;
+      border-radius:3px;
+      background:#fff;
+      transition:.15s ease;
+    }
+    .option input[type="checkbox"]:checked + label::before{
+      border-color:var(--primary);
+      background:var(--primary);
+      box-shadow:inset 0 0 0 2px var(--primary);
+    }
+    .option input[type="checkbox"]:checked + label::after{
+      content:"✓";
+      position:absolute;
+      left:4px;
+      top:50%;
+      transform:translateY(-54%);
+      color:#fff;
+      font-size:11px;
+      font-weight:800;
+      line-height:1;
+    }
+
+    /* 单选仍使用圆形标记，避免与多选混淆 */
+    .option input[type="radio"] + label::before{
+      content:"";
+      position:absolute;
+      left:1px;
+      top:50%;
+      width:15px;
+      height:15px;
+      transform:translateY(-50%);
+      border:1px solid #c7ccd5;
+      border-radius:50%;
+      background:#fff;
+      transition:.15s ease;
+    }
+    .option input[type="radio"]:checked + label::before{
+      border-color:var(--primary);
+      background:radial-gradient(circle at center,var(--primary) 0 4px,#fff 5px 100%);
+    }
+
+    /* 顶部切换项保持轻量文字样式 */
+    .tab{
+      border:0;
+      border-radius:0;
+      padding:5px 3px;
+      margin-right:22px;
+      background:transparent;
+      color:#253047;
+      font-weight:400;
+    }
+    .tab:hover{
+      border:0;
+      color:var(--primary);
+    }
+    .tab.active{
+      border:0;
+      background:transparent;
+      color:var(--primary);
+      font-weight:700;
+      box-shadow:inset 0 -2px 0 var(--primary);
+    }
+
+    .inline-inputs{
+      margin-top:8px;
+    }
+    .small-input{
+      border-radius:2px;
+      height:36px;
+    }
+
+    .more-btn{
+      margin-top:8px;
+      border-radius:0;
+      border:0;
+      border-top:1px solid #e6e9ef;
+      background:#fff;
+    }
+    .footer-actions{
+      border-top:1px solid #edf0f4;
+      background:#fff;
+      padding:16px 0 0;
+    }
+
+    /* 结果预览保留，但改为横向信息区，不占用右侧筛选空间 */
+    .summary-panel{
+      position:static;
+      display:grid;
+      grid-template-columns:220px minmax(250px,1fr) minmax(180px,.7fr) minmax(240px,1fr);
+      gap:0 26px;
+      align-items:start;
+      padding:18px 24px;
+    }
+    .summary-title{
+      grid-column:1 / -1;
+      margin-bottom:12px;
+    }
+    .count-box{
+      margin:0;
+    }
+    .summary-block{
+      border-top:0;
+      padding:0;
+    }
+    #hintArea{
+      align-self:stretch;
+    }
+    #hintArea .ok-box,
+    #hintArea .hint-box{
+      margin-top:0;
+      min-height:72px;
+    }
+
+    @media (max-width:1000px){
+      .summary-panel{
+        grid-template-columns:1fr 1fr;
+        gap:18px;
+      }
+      .section{
+        grid-template-columns:100px minmax(0,1fr);
+      }
+    }
+    @media (max-width:700px){
+      .main-panel{
+        padding:18px 16px;
+      }
+      .section{
+        display:block;
+        padding:16px 0;
+      }
+      .section-head{
+        margin-bottom:8px;
+      }
+      .section > .tab-row,
+      .section > .option-grid,
+      .section > .location-content,
+      .section > .inline-inputs,
+      .section > .subgroup{
+        width:100%;
+      }
+      .subgroup{
+        grid-template-columns:78px minmax(0,1fr);
+      }
+      .summary-panel{
+        grid-template-columns:1fr;
+      }
+      .search-row{
+        grid-template-columns:1fr;
+      }
+      .search-row button{
+        width:100%;
+      }
+    }
+  </style>
+
+
+  <style id="compact-layout-overrides">
+    /* 紧凑版：尽量在单个桌面屏幕中展示全部筛选条件 */
+    body{
+      font-size:12px;
+      background:#f5f6f8;
+    }
+    .topbar-inner{
+      height:52px;
+      padding:0 22px;
+    }
+    .brand{
+      font-size:17px;
+      gap:9px;
+    }
+    .brand-mark{
+      width:30px;
+      height:30px;
+      border-radius:8px;
+      font-size:13px;
+    }
+    .page-label{
+      font-size:11px;
+    }
+
+    .wrap{
+      max-width:1660px;
+      margin:12px auto;
+      padding:0 18px 16px;
+      grid-template-columns:1fr;
+      gap:8px;
+    }
+    .main-panel{
+      padding:14px 20px 10px;
+    }
+    .search-row{
+      grid-template-columns:minmax(0,1fr) auto auto;
+      gap:8px;
+      margin-bottom:10px;
+    }
+    .searchbox input{
+      height:38px;
+      padding-left:38px;
+      border-radius:2px;
+      font-size:12px;
+    }
+    .search-icon{
+      left:13px;
+      font-size:16px;
+    }
+    .primary-btn,.ghost-btn,.ai-btn{
+      height:38px;
+      border-radius:2px;
+      padding:0 16px;
+      font-size:12px;
+    }
+
+    /* 取消每组之间横线，压缩纵向间距 */
+    .section{
+      grid-template-columns:92px minmax(0,1fr);
+      column-gap:12px;
+      row-gap:2px;
+      padding:3px 0;
+      border-top:0 !important;
+    }
+    .section:first-of-type{
+      padding-top:0;
+    }
+    .section-head{
+      padding-top:0;
+      margin:0;
+    }
+    .section-title{
+      font-size:12px;
+      line-height:24px;
+      font-weight:800;
+    }
+    .section-note{
+      display:none;
+    }
+
+    .tab-row{
+      gap:0;
+      margin:0 !important;
+      min-height:24px;
+    }
+    .tab{
+      padding:2px 0;
+      margin-right:18px;
+      font-size:12px;
+      line-height:20px;
+    }
+
+    .location-content{
+      margin:0;
+    }
+    .subgroup{
+      grid-template-columns:76px minmax(0,1fr);
+      column-gap:8px;
+      margin-top:0;
+      min-height:24px;
+    }
+    .subgroup-title{
+      padding-top:0;
+      font-size:12px;
+      line-height:24px;
+      font-weight:800;
+    }
+
+    .option-grid{
+      gap:0 15px;
+      min-height:24px;
+      align-items:center;
+    }
+    .option label{
+      min-height:24px;
+      padding:2px 0 2px 20px;
+      font-size:12px;
+      line-height:20px;
+    }
+    .option input[type="checkbox"] + label::before,
+    .option input[type="radio"] + label::before{
+      width:12px;
+      height:12px;
+      left:0;
+    }
+    .option input[type="checkbox"]:checked + label::after{
+      left:2px;
+      font-size:9px;
+    }
+    .option input[type="radio"]:checked + label::before{
+      background:radial-gradient(circle at center,var(--primary) 0 3px,#fff 4px 100%);
+    }
+
+    .inline-inputs{
+      gap:6px;
+      margin-top:2px;
+      min-height:26px;
+    }
+    .small-input{
+      width:100px;
+      height:28px;
+      border-radius:2px;
+      padding:0 8px;
+      font-size:12px;
+    }
+
+    /* 保留展开/收起功能 */
+    #advanced.collapsed{
+      display:none !important;
+    }
+    #advanced:not(.collapsed){
+      display:block !important;
+    }
+    #moreBtn{
+      display:block !important;
+      height:28px;
+      margin:4px 0 2px;
+      border:0;
+      background:#fff;
+      color:var(--primary);
+      font-size:11px;
+      font-weight:700;
+      cursor:pointer;
+    }
+
+    .footer-actions{
+      position:static;
+      margin-top:6px;
+      padding:7px 0 0;
+      border-top:0;
+      background:#fff;
+    }
+    .footer-actions .primary-btn,
+    .footer-actions .ghost-btn{
+      height:32px;
+    }
+
+    /* 结果预览压缩为单行信息区，避免占用首屏高度 */
+    .summary-panel{
+      padding:8px 14px;
+      display:grid;
+      grid-template-columns:auto 130px minmax(260px,1fr) 170px 190px;
+      align-items:center;
+      gap:10px 18px;
+      min-height:58px;
+    }
+    .summary-title{
+      grid-column:auto;
+      margin:0;
+      font-size:13px;
+      white-space:nowrap;
+    }
+    .count-box{
+      padding:7px 10px;
+      border-radius:4px;
+      margin:0;
+    }
+    .count{
+      font-size:20px;
+      line-height:22px;
+    }
+    .count-label{
+      font-size:9px;
+      margin-top:1px;
+      white-space:nowrap;
+    }
+    .summary-block{
+      padding:0;
+      min-width:0;
+    }
+    .summary-label{
+      display:none;
+    }
+    .selected-list{
+      margin:0;
+      min-height:26px;
+      align-items:center;
+      gap:4px;
+      max-height:52px;
+      overflow:auto;
+    }
+    .selected-tag{
+      padding:4px 7px;
+      font-size:10px;
+    }
+    .sort-select{
+      height:30px;
+      border-radius:2px;
+      font-size:11px;
+    }
+    .switch-row{
+      gap:6px;
+    }
+    .switch-row > div:first-child > div:first-child{
+      font-size:11px;
+    }
+    .switch-row .section-note{
+      display:none;
+    }
+    .switch{
+      width:34px;
+      height:18px;
+    }
+    .switch::after{
+      width:14px;
+      height:14px;
+      top:2px;
+      left:2px;
+    }
+    .switch.on::after{
+      left:18px;
+    }
+    #hintArea{
+      display:none;
+    }
+
+    @media (max-width:1100px){
+      .summary-panel{
+        grid-template-columns:auto 120px 1fr 150px;
+      }
+      .summary-panel .summary-block:nth-of-type(3){
+        display:none;
+      }
+    }
+    @media (max-width:760px){
+      .topbar-inner{
+        height:50px;
+      }
+      .wrap{
+        padding:0 10px 12px;
+      }
+      .main-panel{
+        padding:12px;
+      }
+      .search-row{
+        grid-template-columns:1fr;
+      }
+      .section{
+        display:block;
+        padding:5px 0;
+      }
+      .section-head{
+        margin-bottom:2px;
+      }
+      .subgroup{
+        grid-template-columns:72px minmax(0,1fr);
+      }
+      .summary-panel{
+        grid-template-columns:1fr;
+      }
+      .summary-panel > *{
+        width:100%;
+      }
+    }
+  </style>
+
+
+  <style id="ai-module-styles">
+    .is-hidden{display:none !important}
+
+    .mode-bar-wrap{
+      max-width:1660px;
+      margin:10px auto 0;
+      padding:0 18px;
+    }
+    .mode-bar{
+      min-height:40px;
+      display:flex;
+      align-items:center;
+      gap:22px;
+      padding:0 18px;
+      background:#fff;
+      border:1px solid #e5e8ee;
+    }
+    .mode-item{
+      height:39px;
+      padding:0 2px;
+      border:0;
+      border-bottom:2px solid transparent;
+      background:transparent;
+      color:#596276;
+      font-size:13px;
+      font-weight:700;
+      cursor:pointer;
+    }
+    .mode-item.active{
+      color:var(--primary);
+      border-bottom-color:var(--primary);
+    }
+    .mode-note{
+      margin-left:auto;
+      color:#9aa2b1;
+      font-size:11px;
+    }
+
+    .ai-wrap{
+      max-width:1660px;
+      margin:8px auto 18px;
+      padding:0 18px;
+      display:grid;
+      grid-template-columns:minmax(0,1fr) 310px;
+      gap:10px;
+      align-items:start;
+    }
+    .ai-workspace,
+    .ai-profile{
+      background:#fff;
+      border:1px solid #e5e8ee;
+    }
+    .ai-workspace{
+      padding:18px 22px 22px;
+    }
+    .ai-profile{
+      position:sticky;
+      top:64px;
+      padding:17px;
+    }
+    .ai-title-row{
+      display:flex;
+      align-items:flex-start;
+      justify-content:space-between;
+      gap:20px;
+      margin-bottom:12px;
+    }
+    .ai-title{
+      margin:0;
+      font-size:20px;
+      line-height:1.4;
+      color:#202736;
+    }
+    .ai-subtitle{
+      margin:4px 0 0;
+      color:#7f8797;
+      font-size:12px;
+      line-height:1.7;
+    }
+    .demo-badge{
+      flex-shrink:0;
+      padding:5px 9px;
+      border-radius:3px;
+      background:#f1edff;
+      color:#7047c7;
+      font-size:10px;
+      font-weight:700;
+    }
+
+    .scenario-label,
+    .ai-mini-title{
+      margin-bottom:7px;
+      color:#303746;
+      font-size:12px;
+      font-weight:800;
+    }
+    .scenario-row{
+      display:flex;
+      flex-wrap:wrap;
+      gap:7px;
+      margin-bottom:12px;
+    }
+    .scenario-btn,
+    .example-btn{
+      border:1px solid #dfe3ea;
+      background:#fff;
+      color:#566075;
+      border-radius:3px;
+      padding:6px 10px;
+      font-size:11px;
+      cursor:pointer;
+    }
+    .scenario-btn:hover,
+    .scenario-btn.active,
+    .example-btn:hover{
+      border-color:var(--primary);
+      color:var(--primary);
+      background:#f4f7ff;
+    }
+
+    .ai-chat{
+      min-height:154px;
+      max-height:240px;
+      overflow:auto;
+      padding:12px;
+      border:1px solid #e5e8ee;
+      background:#fafbfc;
+    }
+    .chat-message{
+      display:flex;
+      align-items:flex-start;
+      gap:8px;
+      margin:8px 0;
+    }
+    .chat-message.user{
+      justify-content:flex-end;
+    }
+    .chat-avatar{
+      width:26px;
+      height:26px;
+      flex:0 0 26px;
+      display:grid;
+      place-items:center;
+      border-radius:50%;
+      background:linear-gradient(135deg,#7c3aed,#246bfd);
+      color:#fff;
+      font-size:10px;
+      font-weight:800;
+    }
+    .chat-message.user .chat-avatar{
+      order:2;
+      background:#e6eaf1;
+      color:#596276;
+    }
+    .chat-bubble{
+      max-width:72%;
+      padding:8px 10px;
+      border-radius:7px;
+      background:#fff;
+      border:1px solid #e2e6ed;
+      color:#354056;
+      font-size:12px;
+      line-height:1.65;
+      white-space:pre-wrap;
+    }
+    .chat-message.user .chat-bubble{
+      background:#edf3ff;
+      border-color:#d8e4ff;
+    }
+
+    .ai-input-area{
+      display:grid;
+      grid-template-columns:minmax(0,1fr) auto;
+      gap:8px;
+      margin-top:9px;
+    }
+    .ai-input-area textarea{
+      min-height:62px;
+      max-height:110px;
+      resize:vertical;
+      padding:9px 11px;
+      border:1px solid #dfe3ea;
+      border-radius:3px;
+      outline:none;
+      font:inherit;
+      font-size:12px;
+      line-height:1.6;
+    }
+    .ai-input-area textarea:focus{
+      border-color:var(--primary);
+      box-shadow:0 0 0 2px #eef4ff;
+    }
+    .ai-main-btn{
+      min-width:108px;
+      border:0;
+      border-radius:3px;
+      background:linear-gradient(135deg,#7c3aed,#246bfd);
+      color:#fff;
+      font-size:12px;
+      font-weight:800;
+      cursor:pointer;
+    }
+    .example-row{
+      display:flex;
+      align-items:center;
+      flex-wrap:wrap;
+      gap:6px;
+      margin-top:8px;
+      color:#929aaa;
+      font-size:10px;
+    }
+
+    .followup-panel{
+      margin-top:13px;
+      padding:14px 15px;
+      border:1px solid #e2e6ed;
+      background:#fff;
+    }
+    .followup-head{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:12px;
+      margin-bottom:10px;
+    }
+    .followup-title{
+      font-size:14px;
+      font-weight:800;
+      color:#253047;
+    }
+    .followup-tip{
+      color:#8b94a4;
+      font-size:10px;
+    }
+    .followup-grid{
+      display:grid;
+      grid-template-columns:repeat(3,minmax(0,1fr));
+      gap:10px 12px;
+    }
+    .field label{
+      display:block;
+      margin-bottom:5px;
+      color:#505a6d;
+      font-size:11px;
+      font-weight:700;
+    }
+    .field input,
+    .field select{
+      width:100%;
+      height:34px;
+      padding:0 9px;
+      border:1px solid #dfe3ea;
+      border-radius:2px;
+      background:#fff;
+      color:#2f394d;
+      font-size:11px;
+      outline:none;
+    }
+    .field input:focus,
+    .field select:focus{
+      border-color:var(--primary);
+    }
+    .preference-box{
+      grid-column:1 / -1;
+    }
+    .preference-options{
+      display:flex;
+      flex-wrap:wrap;
+      gap:7px 16px;
+    }
+    .pref-option{
+      position:relative;
+      display:inline-flex;
+      align-items:center;
+      gap:6px;
+      color:#4b5568;
+      font-size:11px;
+      cursor:pointer;
+    }
+    .pref-option input{
+      width:13px;
+      height:13px;
+      accent-color:var(--primary);
+    }
+    .followup-actions{
+      display:flex;
+      justify-content:flex-end;
+      gap:8px;
+      margin-top:12px;
+    }
+    .ai-secondary-btn,
+    .ai-recommend-btn{
+      height:34px;
+      padding:0 15px;
+      border-radius:2px;
+      font-size:11px;
+      font-weight:700;
+      cursor:pointer;
+    }
+    .ai-secondary-btn{
+      border:1px solid #dfe3ea;
+      background:#fff;
+      color:#4f596d;
+    }
+    .ai-recommend-btn{
+      border:0;
+      background:var(--primary);
+      color:#fff;
+    }
+
+    .recommend-section{
+      margin-top:15px;
+      padding-top:13px;
+      border-top:1px solid #edf0f4;
+    }
+    .recommend-head{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:14px;
+      margin-bottom:10px;
+    }
+    .recommend-title{
+      font-size:15px;
+      font-weight:800;
+      color:#253047;
+    }
+    .recommend-desc{
+      color:#8d95a4;
+      font-size:10px;
+    }
+    .recommend-list{
+      display:grid;
+      grid-template-columns:repeat(3,minmax(0,1fr));
+      gap:10px;
+    }
+    .house-card{
+      min-width:0;
+      border:1px solid #e1e5ec;
+      background:#fff;
+    }
+    .house-cover{
+      height:86px;
+      display:flex;
+      align-items:flex-end;
+      justify-content:space-between;
+      padding:9px;
+      background:
+        linear-gradient(135deg,rgba(39,72,155,.15),rgba(124,58,237,.17)),
+        linear-gradient(120deg,#dbe5f7,#f3e9ff);
+    }
+    .house-rank{
+      padding:3px 6px;
+      border-radius:2px;
+      background:rgba(255,255,255,.9);
+      color:#596276;
+      font-size:9px;
+      font-weight:700;
+    }
+    .match-score{
+      color:#fff;
+      font-size:21px;
+      font-weight:900;
+      text-shadow:0 1px 5px rgba(0,0,0,.18);
+    }
+    .match-score small{
+      font-size:9px;
+      font-weight:600;
+    }
+    .house-body{
+      padding:10px;
+    }
+    .house-name{
+      overflow:hidden;
+      text-overflow:ellipsis;
+      white-space:nowrap;
+      color:#263147;
+      font-size:13px;
+      font-weight:800;
+    }
+    .house-basic{
+      margin:5px 0 7px;
+      color:#7e8797;
+      font-size:10px;
+    }
+    .house-price{
+      color:#ee5b3c;
+      font-size:17px;
+      font-weight:900;
+    }
+    .house-price small{
+      font-size:9px;
+      font-weight:500;
+    }
+    .reason-title{
+      margin-top:8px;
+      color:#3e485b;
+      font-size:10px;
+      font-weight:800;
+    }
+    .reason-list{
+      margin:4px 0 0;
+      padding-left:15px;
+      color:#667084;
+      font-size:10px;
+      line-height:1.65;
+    }
+    .tradeoff{
+      margin-top:7px;
+      padding:6px 7px;
+      background:#fff7e8;
+      color:#8a620e;
+      font-size:9px;
+      line-height:1.5;
+    }
+    .house-card{
+      cursor:pointer;
+      transition:.16s ease;
+    }
+    .house-card:hover{
+      border-color:#b8c9ef;
+      box-shadow:0 6px 16px rgba(36,74,145,.08);
+      transform:translateY(-1px);
+    }
+    .card-actions{
+      margin-top:8px;
+    }
+    .compare-btn{
+      width:100%;
+      height:29px;
+      border:1px solid var(--primary);
+      border-radius:2px;
+      background:#f2f6ff;
+      color:var(--primary);
+      font-size:10px;
+      font-weight:700;
+      cursor:pointer;
+    }
+    .compare-btn.added{
+      background:var(--primary);
+      color:#fff;
+    }
+
+    .profile-title{
+      font-size:15px;
+      font-weight:800;
+      color:#253047;
+    }
+    .profile-subtitle{
+      margin-top:3px;
+      color:#9aa2b1;
+      font-size:10px;
+    }
+    .profile-progress{
+      margin:13px 0 15px;
+    }
+    .progress-info{
+      display:flex;
+      justify-content:space-between;
+      margin-bottom:5px;
+      color:#6e7789;
+      font-size:10px;
+    }
+    .progress-track{
+      height:5px;
+      overflow:hidden;
+      background:#edf0f4;
+    }
+    .progress-bar{
+      width:20%;
+      height:100%;
+      background:linear-gradient(90deg,#7c3aed,#246bfd);
+      transition:.25s;
+    }
+    .profile-group{
+      padding:11px 0;
+      border-top:1px solid #edf0f4;
+    }
+    .profile-group-title{
+      margin-bottom:7px;
+      color:#525c6f;
+      font-size:10px;
+      font-weight:800;
+    }
+    .profile-tags{
+      display:flex;
+      flex-wrap:wrap;
+      gap:5px;
+      min-height:24px;
+    }
+    .profile-tag{
+      padding:4px 6px;
+      border-radius:2px;
+      background:#eef3ff;
+      color:#3564bd;
+      font-size:9px;
+    }
+    .profile-empty{
+      color:#a1a8b5;
+      font-size:10px;
+    }
+    .profile-detail{
+      display:grid;
+      grid-template-columns:64px 1fr;
+      gap:6px;
+      margin:5px 0;
+      font-size:10px;
+      line-height:1.5;
+    }
+    .profile-detail span:first-child{
+      color:#939baa;
+    }
+    .profile-detail span:last-child{
+      color:#3c4659;
+      font-weight:700;
+      text-align:right;
+      word-break:break-all;
+    }
+    .profile-actions{
+      display:grid;
+      gap:7px;
+      margin-top:13px;
+    }
+    .profile-actions button{
+      height:32px;
+      border-radius:2px;
+      font-size:10px;
+      font-weight:700;
+      cursor:pointer;
+    }
+    .sync-filter-btn{
+      border:0;
+      background:var(--primary);
+      color:#fff;
+    }
+    .reset-ai-btn{
+      border:1px solid #dfe3ea;
+      background:#fff;
+      color:#626c7e;
+    }
+    .compare-dock{
+      margin-top:11px;
+      padding:9px;
+      background:#f7f8fa;
+      color:#667084;
+      font-size:10px;
+      line-height:1.6;
+    }
+
+    @media (max-width:1050px){
+      .ai-wrap{
+        grid-template-columns:1fr;
+      }
+      .ai-profile{
+        position:static;
+      }
+      .recommend-list{
+        grid-template-columns:1fr 1fr;
+      }
+    }
+    @media (max-width:720px){
+      .mode-note{display:none}
+      .ai-wrap{
+        padding:0 10px;
+      }
+      .ai-workspace{
+        padding:14px 12px;
+      }
+      .ai-input-area{
+        grid-template-columns:1fr;
+      }
+      .ai-main-btn{
+        height:36px;
+      }
+      .followup-grid{
+        grid-template-columns:1fr;
+      }
+      .preference-box{
+        grid-column:auto;
+      }
+      .recommend-list{
+        grid-template-columns:1fr;
+      }
+      .chat-bubble{
+        max-width:88%;
+      }
+    }
+  </style>
+
+
+  <style id="sample-house-styles">
+    .sample-house-panel{
+      grid-column:1 / -1;
+      background:#fff;
+      border:1px solid #e5e8ee;
+      padding:12px 16px 16px;
+    }
+    .sample-house-head{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:16px;
+      margin-bottom:10px;
+    }
+    .sample-house-title{
+      color:#253047;
+      font-size:14px;
+      font-weight:800;
+    }
+    .sample-house-note{
+      margin-top:3px;
+      color:#929aaa;
+      font-size:10px;
+    }
+    .sample-house-total{
+      color:#5f697c;
+      font-size:11px;
+      white-space:nowrap;
+    }
+    .sample-house-grid{
+      display:grid;
+      grid-template-columns:repeat(4,minmax(0,1fr));
+      gap:9px;
+    }
+    .sample-house-card{
+      min-width:0;
+      border:1px solid #e1e5ec;
+      background:#fff;
+      transition:.16s ease;
+    }
+    .sample-house-card:hover{
+      border-color:#b8c9ef;
+      box-shadow:0 5px 14px rgba(41,64,113,.08);
+      transform:translateY(-1px);
+    }
+    .sample-house-cover{
+      height:58px;
+      padding:8px 9px;
+      display:flex;
+      align-items:flex-end;
+      justify-content:space-between;
+      background:
+        linear-gradient(135deg,rgba(36,107,253,.12),rgba(124,58,237,.16)),
+        linear-gradient(120deg,#e5edf9,#f3ebff);
+    }
+    .sample-house-number{
+      color:#40506d;
+      font-size:11px;
+      font-weight:800;
+    }
+    .sample-house-match{
+      padding:3px 6px;
+      border-radius:2px;
+      background:rgba(255,255,255,.9);
+      color:#246bfd;
+      font-size:9px;
+      font-weight:800;
+    }
+    .sample-house-body{
+      padding:8px 9px 9px;
+    }
+    .sample-house-name{
+      overflow:hidden;
+      text-overflow:ellipsis;
+      white-space:nowrap;
+      color:#263147;
+      font-size:12px;
+      font-weight:800;
+    }
+    .sample-house-meta{
+      margin:4px 0;
+      color:#7d8697;
+      font-size:9px;
+      line-height:1.55;
+    }
+    .sample-house-price{
+      color:#ed5b3b;
+      font-size:16px;
+      font-weight:900;
+    }
+    .sample-house-price small{
+      font-size:9px;
+      font-weight:500;
+    }
+    .sample-house-tags{
+      display:flex;
+      flex-wrap:wrap;
+      gap:4px;
+      margin-top:6px;
+      min-height:20px;
+    }
+    .sample-house-tag{
+      padding:3px 5px;
+      border-radius:2px;
+      background:#f2f5fa;
+      color:#596477;
+      font-size:8px;
+    }
+    .sample-house-empty{
+      grid-column:1 / -1;
+      padding:28px 16px;
+      border:1px dashed #d9dee7;
+      text-align:center;
+      color:#8b94a4;
+      font-size:11px;
+    }
+    @media (max-width:1200px){
+      .sample-house-grid{grid-template-columns:repeat(3,minmax(0,1fr));}
+    }
+    @media (max-width:820px){
+      .sample-house-grid{grid-template-columns:repeat(2,minmax(0,1fr));}
+    }
+    @media (max-width:520px){
+      .sample-house-grid{grid-template-columns:1fr;}
+    }
+  </style>
+
+
+  <style id="sample-house-list-v2">
+    .sample-house-grid{
+      display:grid !important;
+      grid-template-columns:repeat(2,minmax(0,1fr)) !important;
+      gap:0 18px !important;
+    }
+    .sample-house-card{
+      display:grid;
+      grid-template-columns:142px minmax(0,1fr) 94px;
+      gap:14px;
+      align-items:stretch;
+      min-height:124px;
+      padding:14px 0;
+      border:0 !important;
+      border-bottom:1px solid #edf0f4 !important;
+      background:#fff;
+      box-shadow:none !important;
+      transform:none !important;
+    }
+    .sample-house-card:hover{
+      border-bottom-color:#dfe5ef !important;
+      background:#fbfcfe;
+      box-shadow:none !important;
+      transform:none !important;
+    }
+    .sample-house-cover{
+      position:relative;
+      height:96px !important;
+      min-height:96px;
+      padding:0 !important;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      border-radius:3px;
+      overflow:hidden;
+      background:none !important;
+      color:#111;
+      font-size:15px;
+      font-weight:800;
+      letter-spacing:.5px;
+    }
+    .sample-house-cover.photo-ready{
+      background:#86bdf5 !important;
+      color:#111;
+    }
+    .sample-house-cover.photo-pending{
+      background:#d7d9dd !important;
+      color:#111;
+    }
+    .sample-house-photo-text{
+      position:relative;
+      z-index:2;
+    }
+    .sample-house-number{
+      position:absolute;
+      left:7px;
+      top:7px;
+      padding:3px 5px;
+      background:rgba(255,255,255,.78);
+      color:#263147 !important;
+      font-size:8px !important;
+      font-weight:700;
+      border-radius:2px;
+    }
+    .sample-house-match{
+      position:absolute;
+      right:7px;
+      bottom:7px;
+      padding:3px 5px !important;
+      border-radius:2px !important;
+      background:rgba(255,255,255,.84) !important;
+      color:#246bfd !important;
+      font-size:8px !important;
+      font-weight:800;
+    }
+    .sample-house-body{
+      min-width:0;
+      padding:0 !important;
+      align-self:start;
+    }
+    .sample-house-name{
+      margin:1px 0 7px;
+      color:#0f2749 !important;
+      font-size:14px !important;
+      line-height:1.45;
+      font-weight:800 !important;
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
+    }
+    .sample-house-meta{
+      margin:0 0 7px !important;
+      color:#6f7889 !important;
+      font-size:10px !important;
+      line-height:1.7 !important;
+    }
+    .sample-house-submeta{
+      margin-top:6px;
+      color:#929aaa;
+      font-size:9px;
+      line-height:1.6;
+    }
+    .sample-house-tags{
+      display:flex;
+      flex-wrap:wrap;
+      gap:5px !important;
+      min-height:20px;
+      margin-top:6px !important;
+    }
+    .sample-house-tag{
+      padding:4px 6px !important;
+      background:#f2f5f8 !important;
+      color:#738096 !important;
+      font-size:8px !important;
+      border-radius:2px !important;
+    }
+    .sample-house-price-wrap{
+      align-self:start;
+      padding-top:2px;
+      text-align:right;
+      white-space:nowrap;
+    }
+    .sample-house-price{
+      color:#ff563f !important;
+      font-size:22px !important;
+      line-height:1.2;
+      font-weight:900 !important;
+    }
+    .sample-house-price small{
+      font-size:9px !important;
+      font-weight:600 !important;
+    }
+    .sample-house-source{
+      margin-top:10px;
+      color:#9ba3b1;
+      font-size:9px;
+    }
+
+    @media (max-width:1180px){
+      .sample-house-grid{
+        grid-template-columns:1fr !important;
+      }
+    }
+    @media (max-width:680px){
+      .sample-house-card{
+        grid-template-columns:105px minmax(0,1fr);
+        gap:10px;
+      }
+      .sample-house-cover{
+        height:82px !important;
+        min-height:82px;
+        font-size:12px;
+      }
+      .sample-house-price-wrap{
+        grid-column:2;
+        text-align:left;
+        margin-top:-2px;
+      }
+      .sample-house-price{
+        font-size:18px !important;
+      }
+    }
+  </style>
+
+
+  <style id="house-detail-styles">
+    .house-detail-module{
+      background:#f5f6f8;
+      min-height:calc(100vh - 52px);
+      padding:12px 18px 34px;
+    }
+    .detail-container{
+      max-width:1420px;
+      margin:0 auto;
+    }
+    .detail-back-row{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:16px;
+      min-height:34px;
+      margin-bottom:6px;
+    }
+    .detail-back-btn{
+      border:0;
+      background:transparent;
+      color:#4e596d;
+      font-size:12px;
+      font-weight:700;
+      cursor:pointer;
+      padding:4px 0;
+    }
+    .detail-back-btn:hover{color:var(--primary)}
+    .detail-breadcrumb{
+      color:#939baa;
+      font-size:10px;
+    }
+
+    .detail-title-block{
+      padding:15px 18px;
+      background:#fff;
+      border:1px solid #e4e8ef;
+      border-bottom:0;
+    }
+    .detail-title{
+      margin:0;
+      color:#132b4e;
+      font-size:22px;
+      line-height:1.45;
+      font-weight:900;
+    }
+    .detail-title-meta{
+      display:flex;
+      flex-wrap:wrap;
+      gap:8px 16px;
+      margin-top:7px;
+      color:#8b94a5;
+      font-size:10px;
+    }
+    .detail-verified{
+      color:#246bfd;
+      font-weight:700;
+    }
+
+    .detail-hero{
+      display:grid;
+      grid-template-columns:minmax(0,1.4fr) minmax(360px,.8fr);
+      gap:12px;
+      background:#fff;
+      border:1px solid #e4e8ef;
+      padding:16px 18px 18px;
+    }
+    .detail-gallery{
+      min-width:0;
+    }
+    .detail-main-photo{
+      position:relative;
+      height:360px;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      overflow:hidden;
+      border-radius:3px;
+      color:#101828;
+      font-size:28px;
+      font-weight:900;
+      letter-spacing:1px;
+    }
+    .detail-main-photo.photo-ready{
+      background:
+        linear-gradient(135deg,rgba(255,255,255,.13),rgba(30,86,160,.12)),
+        #86bdf5;
+    }
+    .detail-main-photo.photo-pending{
+      background:#d7d9dd;
+    }
+    .detail-photo-badge{
+      position:absolute;
+      left:12px;
+      top:12px;
+      padding:5px 8px;
+      border-radius:2px;
+      background:rgba(255,255,255,.9);
+      color:#2f3c53;
+      font-size:10px;
+      font-weight:800;
+    }
+    .detail-photo-count{
+      position:absolute;
+      right:12px;
+      bottom:12px;
+      padding:5px 8px;
+      border-radius:2px;
+      background:rgba(17,24,39,.72);
+      color:#fff;
+      font-size:10px;
+    }
+    .detail-thumbnails{
+      display:grid;
+      grid-template-columns:repeat(5,minmax(0,1fr));
+      gap:6px;
+      margin-top:7px;
+    }
+    .detail-thumb{
+      height:62px;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      border:2px solid transparent;
+      border-radius:2px;
+      color:#19253a;
+      font-size:9px;
+      font-weight:700;
+      cursor:pointer;
+    }
+    .detail-thumb.photo-ready{
+      background:#abd2f8;
+    }
+    .detail-thumb.photo-pending{
+      background:#e0e2e6;
+    }
+    .detail-thumb.active{
+      border-color:var(--primary);
+    }
+
+    .detail-summary-card{
+      min-width:0;
+      border:1px solid #e2e6ed;
+      padding:17px 18px;
+    }
+    .detail-summary-top{
+      display:flex;
+      align-items:flex-start;
+      justify-content:space-between;
+      gap:12px;
+    }
+    .detail-price{
+      color:#ff563f;
+      font-size:34px;
+      line-height:1.15;
+      font-weight:900;
+    }
+    .detail-price small{
+      font-size:13px;
+      font-weight:700;
+    }
+    .detail-icon-actions{
+      display:flex;
+      gap:8px;
+    }
+    .detail-icon-btn{
+      width:34px;
+      height:34px;
+      border:1px solid #e1e5eb;
+      border-radius:2px;
+      background:#fff;
+      color:#667085;
+      cursor:pointer;
+      font-size:14px;
+    }
+    .detail-icon-btn.active{
+      color:#ff5b62;
+      border-color:#ffc4c7;
+      background:#fff5f5;
+    }
+    .detail-tags{
+      display:flex;
+      flex-wrap:wrap;
+      gap:6px;
+      margin:12px 0 14px;
+    }
+    .detail-tag{
+      padding:5px 8px;
+      border-radius:2px;
+      background:#f0f4f8;
+      color:#6c7890;
+      font-size:10px;
+    }
+    .detail-key-metrics{
+      display:grid;
+      grid-template-columns:repeat(3,minmax(0,1fr));
+      gap:0;
+      margin:4px 0 14px;
+      border-top:1px solid #edf0f4;
+      border-bottom:1px solid #edf0f4;
+    }
+    .detail-metric{
+      padding:12px 8px;
+      text-align:center;
+      border-right:1px solid #edf0f4;
+    }
+    .detail-metric:last-child{border-right:0}
+    .detail-metric strong{
+      display:block;
+      color:#253047;
+      font-size:14px;
+      line-height:1.4;
+    }
+    .detail-metric span{
+      display:block;
+      margin-top:2px;
+      color:#929aaa;
+      font-size:9px;
+    }
+    .detail-cost-card{
+      padding:10px 11px;
+      background:#fff7eb;
+      border:1px solid #f6dfbd;
+    }
+    .detail-cost-title{
+      display:flex;
+      justify-content:space-between;
+      gap:10px;
+      color:#7b5a1b;
+      font-size:10px;
+    }
+    .detail-cost-title strong{
+      color:#ea6b1f;
+      font-size:15px;
+    }
+    .detail-cost-note{
+      margin-top:4px;
+      color:#9a7b42;
+      font-size:9px;
+      line-height:1.5;
+    }
+    .detail-ai-brief{
+      margin-top:10px;
+      padding:10px 11px;
+      background:#f4f7ff;
+      border:1px solid #dce6ff;
+    }
+    .detail-ai-brief-title{
+      color:#335ca8;
+      font-size:10px;
+      font-weight:800;
+    }
+    .detail-ai-brief-text{
+      margin-top:4px;
+      color:#596983;
+      font-size:10px;
+      line-height:1.65;
+    }
+    .detail-contact-actions{
+      display:grid;
+      grid-template-columns:1fr 1fr;
+      gap:8px;
+      margin-top:12px;
+    }
+    .detail-contact-btn{
+      height:40px;
+      border-radius:2px;
+      font-size:12px;
+      font-weight:800;
+      cursor:pointer;
+    }
+    .detail-contact-btn.primary{
+      border:0;
+      background:var(--primary);
+      color:#fff;
+    }
+    .detail-contact-btn.secondary{
+      border:1px solid var(--primary);
+      background:#f4f7ff;
+      color:var(--primary);
+    }
+
+    .detail-anchor-nav{
+      position:sticky;
+      top:0;
+      z-index:15;
+      display:flex;
+      align-items:center;
+      gap:26px;
+      min-height:48px;
+      margin-top:10px;
+      padding:0 18px;
+      background:#fff;
+      border:1px solid #e4e8ef;
+      box-shadow:0 2px 8px rgba(33,48,78,.04);
+    }
+    .detail-anchor-btn{
+      height:47px;
+      padding:0 2px;
+      border:0;
+      border-bottom:2px solid transparent;
+      background:transparent;
+      color:#465166;
+      font-size:11px;
+      font-weight:700;
+      cursor:pointer;
+    }
+    .detail-anchor-btn:hover,
+    .detail-anchor-btn.active{
+      color:var(--primary);
+      border-bottom-color:var(--primary);
+    }
+
+    .detail-layout{
+      display:grid;
+      grid-template-columns:minmax(0,1fr) 286px;
+      gap:12px;
+      align-items:start;
+      margin-top:10px;
+    }
+    .detail-main{
+      min-width:0;
+    }
+    .detail-section{
+      scroll-margin-top:60px;
+      margin-bottom:10px;
+      padding:20px 22px;
+      background:#fff;
+      border:1px solid #e4e8ef;
+    }
+    .detail-section-head{
+      display:flex;
+      align-items:flex-start;
+      justify-content:space-between;
+      gap:16px;
+      margin-bottom:16px;
+    }
+    .detail-section-title{
+      color:#172b4d;
+      font-size:17px;
+      font-weight:900;
+    }
+    .detail-section-subtitle{
+      margin-top:4px;
+      color:#949cab;
+      font-size:9px;
+    }
+
+    .detail-info-grid{
+      display:grid;
+      grid-template-columns:repeat(4,minmax(0,1fr));
+      gap:0;
+      border-top:1px solid #edf0f4;
+      border-left:1px solid #edf0f4;
+    }
+    .detail-info-item{
+      min-height:58px;
+      padding:10px 11px;
+      border-right:1px solid #edf0f4;
+      border-bottom:1px solid #edf0f4;
+    }
+    .detail-info-item span{
+      display:block;
+      color:#929aaa;
+      font-size:9px;
+    }
+    .detail-info-item strong{
+      display:block;
+      margin-top:5px;
+      color:#344054;
+      font-size:11px;
+      line-height:1.45;
+    }
+
+    .detail-facility-grid{
+      display:grid;
+      grid-template-columns:repeat(6,minmax(0,1fr));
+      gap:10px;
+      margin-top:18px;
+    }
+    .detail-facility{
+      min-height:70px;
+      display:flex;
+      flex-direction:column;
+      align-items:center;
+      justify-content:center;
+      gap:5px;
+      border:1px solid #edf0f4;
+      color:#566176;
+      text-align:center;
+      font-size:9px;
+    }
+    .detail-facility-icon{
+      font-size:20px;
+      line-height:1;
+    }
+
+    .detail-ai-score-grid{
+      display:grid;
+      grid-template-columns:210px minmax(0,1fr);
+      gap:18px;
+      align-items:center;
+    }
+    .detail-score-ring{
+      width:150px;
+      height:150px;
+      margin:auto;
+      display:grid;
+      place-items:center;
+      border-radius:50%;
+      background:conic-gradient(var(--primary) calc(var(--score) * 1%),#edf1f6 0);
+      position:relative;
+    }
+    .detail-score-ring::after{
+      content:"";
+      position:absolute;
+      inset:14px;
+      border-radius:50%;
+      background:#fff;
+    }
+    .detail-score-value{
+      position:relative;
+      z-index:1;
+      color:#263a5f;
+      text-align:center;
+      font-size:30px;
+      font-weight:900;
+    }
+    .detail-score-value small{
+      display:block;
+      color:#8f98a7;
+      font-size:9px;
+      font-weight:600;
+    }
+    .detail-decision-list{
+      display:grid;
+      gap:8px;
+    }
+    .detail-decision-item{
+      display:grid;
+      grid-template-columns:20px 80px 1fr;
+      gap:7px;
+      align-items:start;
+      min-height:30px;
+      color:#596579;
+      font-size:10px;
+      line-height:1.55;
+    }
+    .detail-decision-icon{
+      width:18px;
+      height:18px;
+      display:grid;
+      place-items:center;
+      border-radius:50%;
+      font-size:9px;
+      font-weight:900;
+    }
+    .detail-decision-item.good .detail-decision-icon{
+      background:#e7f8ef;
+      color:#15945c;
+    }
+    .detail-decision-item.warn .detail-decision-icon{
+      background:#fff4df;
+      color:#c67b12;
+    }
+    .detail-decision-item strong{
+      color:#344054;
+    }
+
+    .detail-fee-table{
+      width:100%;
+      border-collapse:collapse;
+      font-size:10px;
+    }
+    .detail-fee-table th,
+    .detail-fee-table td{
+      padding:11px 10px;
+      border-bottom:1px solid #edf0f4;
+      text-align:left;
+    }
+    .detail-fee-table th{
+      background:#fafbfc;
+      color:#7d8798;
+      font-weight:700;
+    }
+    .detail-fee-table td{
+      color:#344054;
+    }
+    .detail-fee-highlight{
+      color:#ff563f !important;
+      font-weight:800;
+    }
+    .detail-fee-total{
+      margin-top:12px;
+      padding:11px 12px;
+      background:#fff8ee;
+      color:#7b5a1b;
+      font-size:10px;
+      line-height:1.6;
+    }
+
+    .detail-description-grid{
+      display:grid;
+      grid-template-columns:1fr 1fr;
+      gap:12px;
+    }
+    .detail-description-box{
+      padding:14px;
+      background:#fafbfc;
+      border:1px solid #edf0f4;
+    }
+    .detail-description-box h4{
+      margin:0 0 8px;
+      color:#344054;
+      font-size:11px;
+    }
+    .detail-description-box p,
+    .detail-description-box ul{
+      margin:0;
+      color:#667085;
+      font-size:10px;
+      line-height:1.8;
+    }
+    .detail-description-box ul{
+      padding-left:17px;
+    }
+
+    .detail-map{
+      position:relative;
+      height:300px;
+      overflow:hidden;
+      border:1px solid #dfe5ec;
+      background:
+        linear-gradient(90deg,transparent 24%,rgba(255,255,255,.72) 25%,transparent 26%,transparent 49%,rgba(255,255,255,.72) 50%,transparent 51%,transparent 74%,rgba(255,255,255,.72) 75%,transparent 76%),
+        linear-gradient(transparent 24%,rgba(255,255,255,.72) 25%,transparent 26%,transparent 49%,rgba(255,255,255,.72) 50%,transparent 51%,transparent 74%,rgba(255,255,255,.72) 75%,transparent 76%),
+        #dfead9;
+      background-size:120px 120px;
+    }
+    .detail-map-road{
+      position:absolute;
+      left:-5%;
+      top:48%;
+      width:110%;
+      height:26px;
+      transform:rotate(-4deg);
+      background:#f6c56d;
+      border:6px solid #fff4d3;
+    }
+    .detail-map-marker{
+      position:absolute;
+      left:48%;
+      top:44%;
+      transform:translate(-50%,-50%);
+      padding:7px 10px;
+      border-radius:3px;
+      background:var(--primary);
+      color:#fff;
+      font-size:10px;
+      font-weight:800;
+      box-shadow:0 5px 14px rgba(36,107,253,.25);
+    }
+    .detail-map-poi{
+      position:absolute;
+      padding:5px 7px;
+      border-radius:2px;
+      background:rgba(255,255,255,.9);
+      color:#526078;
+      font-size:9px;
+      box-shadow:0 2px 8px rgba(36,48,78,.08);
+    }
+    .detail-nearby-tabs{
+      display:flex;
+      flex-wrap:wrap;
+      gap:7px;
+      margin:10px 0;
+    }
+    .detail-nearby-tab{
+      padding:5px 9px;
+      border:1px solid #e0e5ec;
+      background:#fff;
+      color:#667085;
+      font-size:9px;
+      cursor:pointer;
+    }
+    .detail-nearby-tab.active{
+      border-color:var(--primary);
+      color:var(--primary);
+      background:#f4f7ff;
+    }
+    .detail-nearby-list{
+      display:grid;
+      grid-template-columns:repeat(3,minmax(0,1fr));
+      gap:8px;
+      margin-top:10px;
+    }
+    .detail-nearby-item{
+      padding:9px 10px;
+      background:#fafbfc;
+      border:1px solid #edf0f4;
+      color:#596579;
+      font-size:9px;
+      line-height:1.6;
+    }
+
+    .detail-similar-grid{
+      display:grid;
+      grid-template-columns:repeat(4,minmax(0,1fr));
+      gap:9px;
+    }
+    .detail-similar-card{
+      border:1px solid #e3e7ed;
+      background:#fff;
+      cursor:pointer;
+    }
+    .detail-similar-cover{
+      height:82px;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      color:#111827;
+      font-size:11px;
+      font-weight:800;
+    }
+    .detail-similar-cover.photo-ready{background:#86bdf5}
+    .detail-similar-cover.photo-pending{background:#d7d9dd}
+    .detail-similar-body{
+      padding:8px 9px;
+    }
+    .detail-similar-name{
+      overflow:hidden;
+      text-overflow:ellipsis;
+      white-space:nowrap;
+      color:#263147;
+      font-size:10px;
+      font-weight:800;
+    }
+    .detail-similar-meta{
+      margin-top:4px;
+      color:#8b94a5;
+      font-size:8px;
+    }
+    .detail-similar-price{
+      margin-top:5px;
+      color:#ff563f;
+      font-size:13px;
+      font-weight:900;
+    }
+
+    .detail-side-card{
+      position:sticky;
+      top:58px;
+      padding:16px;
+      background:#fff;
+      border:1px solid #e4e8ef;
+    }
+    .detail-advisor{
+      display:flex;
+      align-items:center;
+      gap:10px;
+    }
+    .detail-advisor-avatar{
+      width:48px;
+      height:48px;
+      display:grid;
+      place-items:center;
+      border-radius:50%;
+      background:linear-gradient(135deg,#dbe6ff,#b7cbff);
+      color:#2b4f99;
+      font-size:13px;
+      font-weight:900;
+    }
+    .detail-advisor strong{
+      display:block;
+      color:#253047;
+      font-size:12px;
+    }
+    .detail-advisor span{
+      display:block;
+      margin-top:3px;
+      color:#9199a8;
+      font-size:9px;
+    }
+    .detail-advisor-score{
+      display:grid;
+      grid-template-columns:repeat(3,1fr);
+      gap:5px;
+      margin:14px 0;
+    }
+    .detail-advisor-score div{
+      padding:8px 4px;
+      background:#fafbfc;
+      text-align:center;
+    }
+    .detail-advisor-score strong{
+      display:block;
+      color:#344054;
+      font-size:11px;
+    }
+    .detail-advisor-score span{
+      display:block;
+      margin-top:2px;
+      color:#949cab;
+      font-size:8px;
+    }
+    .detail-side-hint{
+      padding:10px;
+      background:#f7f9fc;
+      color:#667085;
+      font-size:9px;
+      line-height:1.7;
+    }
+    .detail-side-actions{
+      display:grid;
+      gap:7px;
+      margin-top:11px;
+    }
+    .detail-side-actions button{
+      height:36px;
+      border-radius:2px;
+      font-size:11px;
+      font-weight:800;
+      cursor:pointer;
+    }
+    .detail-side-primary{
+      border:0;
+      background:var(--primary);
+      color:#fff;
+    }
+    .detail-side-secondary{
+      border:1px solid var(--primary);
+      background:#fff;
+      color:var(--primary);
+    }
+    .detail-trust-list{
+      display:grid;
+      gap:7px;
+      margin-top:14px;
+      padding-top:13px;
+      border-top:1px solid #edf0f4;
+    }
+    .detail-trust-item{
+      display:flex;
+      align-items:center;
+      gap:7px;
+      color:#596579;
+      font-size:9px;
+    }
+    .detail-trust-dot{
+      width:16px;
+      height:16px;
+      display:grid;
+      place-items:center;
+      border-radius:50%;
+      background:#e8f8ef;
+      color:#15945c;
+      font-size:8px;
+      font-weight:900;
+    }
+
+    .detail-toast{
+      position:fixed;
+      left:50%;
+      bottom:30px;
+      z-index:99;
+      transform:translate(-50%,20px);
+      padding:10px 16px;
+      border-radius:3px;
+      background:rgba(24,32,48,.92);
+      color:#fff;
+      font-size:11px;
+      opacity:0;
+      pointer-events:none;
+      transition:.2s ease;
+    }
+    .detail-toast.show{
+      opacity:1;
+      transform:translate(-50%,0);
+    }
+
+    body.detail-active .mode-bar-wrap{
+      display:none;
+    }
+    .sample-house-card{
+      cursor:pointer;
+    }
+
+    @media (max-width:1050px){
+      .detail-hero{
+        grid-template-columns:1fr;
+      }
+      .detail-layout{
+        grid-template-columns:1fr;
+      }
+      .detail-side-card{
+        position:static;
+      }
+      .detail-info-grid{
+        grid-template-columns:repeat(3,minmax(0,1fr));
+      }
+    }
+    @media (max-width:760px){
+      .house-detail-module{
+        padding:8px 10px 22px;
+      }
+      .detail-title{
+        font-size:17px;
+      }
+      .detail-main-photo{
+        height:230px;
+        font-size:20px;
+      }
+      .detail-hero{
+        padding:12px;
+      }
+      .detail-summary-card{
+        padding:13px;
+      }
+      .detail-anchor-nav{
+        overflow:auto;
+        gap:18px;
+      }
+      .detail-anchor-btn{
+        white-space:nowrap;
+      }
+      .detail-section{
+        padding:15px 13px;
+      }
+      .detail-info-grid{
+        grid-template-columns:repeat(2,minmax(0,1fr));
+      }
+      .detail-facility-grid{
+        grid-template-columns:repeat(3,minmax(0,1fr));
+      }
+      .detail-ai-score-grid{
+        grid-template-columns:1fr;
+      }
+      .detail-description-grid{
+        grid-template-columns:1fr;
+      }
+      .detail-nearby-list{
+        grid-template-columns:1fr;
+      }
+      .detail-similar-grid{
+        grid-template-columns:repeat(2,minmax(0,1fr));
+      }
+    }
+  </style>
+
+
+  <style id="ai-back-filter-style">
+    .ai-back-filter-btn{
+      display:inline-flex;
+      align-items:center;
+      height:28px;
+      margin:0 0 8px;
+      padding:0;
+      border:0;
+      background:transparent;
+      color:#667085;
+      font-size:11px;
+      font-weight:700;
+      cursor:pointer;
+    }
+    .ai-back-filter-btn:hover{
+      color:var(--primary);
+    }
+  </style>
+
+
+  <style id="ai-five-result-style">
+    .recommend-list{
+      grid-template-columns:repeat(3,minmax(0,1fr));
+    }
+    @media (min-width:1350px){
+      .recommend-list{
+        grid-template-columns:repeat(5,minmax(0,1fr));
+      }
+    }
+    @media (max-width:1050px){
+      .recommend-list{
+        grid-template-columns:repeat(2,minmax(0,1fr));
+      }
+    }
+    @media (max-width:720px){
+      .recommend-list{
+        grid-template-columns:1fr;
+      }
+    }
+  </style>
+
+
+  <style id="ai-compare-style">
+    .recommend-click-tip{
+      margin-top:4px;
+      color:#9aa2b1;
+      font-size:9px;
+    }
+    .compare-dock{
+      padding:11px !important;
+      border:1px solid #e4e9f1;
+      background:#f7f9fc !important;
+    }
+    .compare-dock-title{
+      display:flex;
+      justify-content:space-between;
+      gap:8px;
+      color:#354052;
+      font-size:11px;
+      font-weight:800;
+    }
+    .compare-dock-count{color:var(--primary)}
+    .compare-dock-steps{
+      margin:6px 0 0;
+      padding-left:16px;
+      color:#7f899a;
+      font-size:9px;
+      line-height:1.65;
+    }
+    .compare-dock-items{
+      display:grid;
+      gap:5px;
+      margin-top:8px;
+    }
+    .compare-dock-item{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:7px;
+      padding:6px 7px;
+      border:1px solid #e4e9f1;
+      background:#fff;
+      color:#536074;
+      font-size:9px;
+    }
+    .compare-dock-item span{
+      overflow:hidden;
+      text-overflow:ellipsis;
+      white-space:nowrap;
+    }
+    .compare-remove-btn{
+      flex:0 0 auto;
+      border:0;
+      background:transparent;
+      color:#9aa2b1;
+      font-size:12px;
+      cursor:pointer;
+    }
+    .compare-start-btn{
+      width:100%;
+      height:32px;
+      margin-top:8px;
+      border:0;
+      border-radius:2px;
+      background:var(--primary);
+      color:#fff;
+      font-size:10px;
+      font-weight:800;
+      cursor:pointer;
+    }
+    .compare-start-btn:disabled{
+      background:#cbd2dd;
+      cursor:not-allowed;
+    }
+    .ai-compare-section{
+      margin-top:15px;
+      padding:16px;
+      border:1px solid #dfe5ee;
+      background:#fff;
+      scroll-margin-top:58px;
+    }
+    .ai-compare-head{
+      display:flex;
+      align-items:flex-start;
+      justify-content:space-between;
+      gap:14px;
+      margin-bottom:12px;
+    }
+    .ai-compare-title{
+      color:#253047;
+      font-size:15px;
+      font-weight:900;
+    }
+    .ai-compare-subtitle{
+      max-width:760px;
+      margin-top:4px;
+      color:#8f98a8;
+      font-size:9px;
+      line-height:1.65;
+    }
+    .ai-compare-actions{
+      display:flex;
+      gap:7px;
+    }
+    .ai-compare-actions button{
+      height:30px;
+      padding:0 10px;
+      border-radius:2px;
+      font-size:9px;
+      font-weight:700;
+      cursor:pointer;
+    }
+    .compare-clear-all{
+      border:1px solid #dfe4eb;
+      background:#fff;
+      color:#667085;
+    }
+    .compare-close-btn{
+      border:1px solid var(--primary);
+      background:#f3f7ff;
+      color:var(--primary);
+    }
+    .compare-conclusion{
+      display:grid;
+      grid-template-columns:repeat(3,minmax(0,1fr));
+      gap:8px;
+      margin-bottom:12px;
+    }
+    .compare-conclusion-card{
+      padding:10px;
+      border:1px solid #e3e8ef;
+      background:#fafbfc;
+    }
+    .compare-conclusion-card.primary{
+      border-color:#cfdcff;
+      background:#f4f7ff;
+    }
+    .compare-conclusion-card strong{
+      display:block;
+      color:#344054;
+      font-size:10px;
+    }
+    .compare-conclusion-card.primary strong{color:#2f5cab}
+    .compare-conclusion-card span{
+      display:block;
+      margin-top:4px;
+      color:#687386;
+      font-size:9px;
+      line-height:1.55;
+    }
+    .compare-table-wrap{
+      overflow:auto;
+      border:1px solid #e4e8ee;
+    }
+    .compare-table{
+      width:100%;
+      min-width:720px;
+      border-collapse:collapse;
+      table-layout:fixed;
+      font-size:9px;
+    }
+    .compare-table th,
+    .compare-table td{
+      padding:9px;
+      border-right:1px solid #e8ecf2;
+      border-bottom:1px solid #e8ecf2;
+      vertical-align:top;
+      text-align:left;
+      line-height:1.55;
+    }
+    .compare-table th:last-child,
+    .compare-table td:last-child{border-right:0}
+    .compare-table thead th{
+      background:#f8fafc;
+      color:#344054;
+      font-size:10px;
+    }
+    .compare-table tbody th{
+      width:110px;
+      background:#fbfcfd;
+      color:#7b8494;
+    }
+    .compare-best{
+      color:#15945c;
+      font-weight:800;
+    }
+    .compare-warn{color:#c27a14}
+    .compare-score{
+      color:var(--primary);
+      font-size:15px;
+      font-weight:900;
+    }
+    .compare-house-link{
+      border:0;
+      background:transparent;
+      color:#234a91;
+      font-size:10px;
+      font-weight:800;
+      cursor:pointer;
+    }
+    @media(max-width:720px){
+      .compare-conclusion{grid-template-columns:1fr}
+      .ai-compare-head{display:block}
+      .ai-compare-actions{margin-top:9px}
+    }
+  </style>
+
+</head>
+<body>
+  <header class="topbar">
+    <div class="topbar-inner">
+      <div class="brand">
+        <div class="brand-mark">屋</div>
+        <span>AI租房功能原型</span>
+      </div>
+      <div class="page-label">常规筛选＋AI智能选房</div>
+    </div>
+  </header>
+
+  <div class="mode-bar-wrap">
+    <nav class="mode-bar" aria-label="找房方式切换">
+      <button class="mode-item active" id="filterModeBtn">常规筛选</button>
+      <button class="mode-item" id="aiModeBtn">AI智能选房</button>
+      <span class="mode-note">交互原型：使用预设规则模拟AI能力，未接入大模型</span>
+    </nav>
+  </div>
+
+
+  <main class="wrap" id="filterModule">
+    <section class="panel main-panel">
+      <div class="search-row">
+        <div class="searchbox">
+          <span class="search-icon">⌕</span>
+          <input id="keyword" type="text" placeholder="搜索区域、商圈、小区、地铁站、学校、公司或具体地址" />
+        </div>
+        <button class="primary-btn" id="searchBtn">应用搜索</button>
+        <button class="ai-btn" id="aiSearchBtn">AI搜索</button>
+      </div>
+
+      <div class="section">
+        <div class="section-head">
+          <div class="section-title">位置</div>
+          <div class="section-note">支持多种找房方式</div>
+        </div>
+        <div class="tab-row" id="locationTabs">
+          <button class="tab active" data-target="region">按区域</button>
+          <button class="tab" data-target="subway">按地铁</button>
+          <button class="tab" data-target="commute">按通勤时间</button>
+          <button class="tab" data-target="landmark">按学校 / 工作地点</button>
+        </div>
+
+        <div class="location-content active" id="region">
+          <div class="subgroup-title">行政区域 / 商圈</div>
+          <div class="option-grid" data-group="区域">
+            <div class="option"><input type="checkbox" id="r0" data-all="true" checked><label for="r0">全部</label></div>
+            <div class="option"><input type="checkbox" id="r1"><label for="r1">浦东新区</label></div>
+            <div class="option"><input type="checkbox" id="r2"><label for="r2">黄浦区</label></div>
+            <div class="option"><input type="checkbox" id="r3"><label for="r3">徐汇区</label></div>
+            <div class="option"><input type="checkbox" id="r4"><label for="r4">长宁区</label></div>
+            <div class="option"><input type="checkbox" id="r5"><label for="r5">静安区</label></div>
+            <div class="option"><input type="checkbox" id="r6"><label for="r6">普陀区</label></div>
+            <div class="option"><input type="checkbox" id="r7"><label for="r7">虹口区</label></div>
+            <div class="option"><input type="checkbox" id="r8"><label for="r8">杨浦区</label></div>
+            <div class="option"><input type="checkbox" id="r9"><label for="r9">闵行区</label></div>
+            <div class="option"><input type="checkbox" id="r10"><label for="r10">宝山区</label></div>
+            <div class="option"><input type="checkbox" id="r11"><label for="r11">嘉定区</label></div>
+            <div class="option"><input type="checkbox" id="r12"><label for="r12">松江区</label></div>
+            <div class="option"><input type="checkbox" id="r13"><label for="r13">青浦区</label></div>
+            <div class="option"><input type="checkbox" id="r14"><label for="r14">奉贤区</label></div>
+            <div class="option"><input type="checkbox" id="r15"><label for="r15">金山区</label></div>
+            <div class="option"><input type="checkbox" id="r16"><label for="r16">崇明区</label></div>
+          </div>
+        </div>
+
+        <div class="location-content" id="subway">
+          <div class="subgroup-title">地铁线路</div>
+          <div class="option-grid" data-group="地铁">
+            <div class="option"><input type="checkbox" id="s0" data-all="true" checked><label for="s0">全部</label></div>
+            <div class="option"><input type="checkbox" id="s1"><label for="s1">1号线</label></div>
+            <div class="option"><input type="checkbox" id="s2"><label for="s2">2号线</label></div>
+            <div class="option"><input type="checkbox" id="s3"><label for="s3">3号线</label></div>
+            <div class="option"><input type="checkbox" id="s4"><label for="s4">4号线</label></div>
+            <div class="option"><input type="checkbox" id="s5"><label for="s5">5号线</label></div>
+            <div class="option"><input type="checkbox" id="s6"><label for="s6">6号线</label></div>
+            <div class="option"><input type="checkbox" id="s7"><label for="s7">7号线</label></div>
+            <div class="option"><input type="checkbox" id="s8"><label for="s8">8号线</label></div>
+            <div class="option"><input type="checkbox" id="s9"><label for="s9">9号线</label></div>
+            <div class="option"><input type="checkbox" id="s10"><label for="s10">10号线</label></div>
+            <div class="option"><input type="checkbox" id="s11"><label for="s11">11号线</label></div>
+            <div class="option"><input type="checkbox" id="s12"><label for="s12">12号线</label></div>
+            <div class="option"><input type="checkbox" id="s13"><label for="s13">13号线</label></div>
+            <div class="option"><input type="checkbox" id="s14"><label for="s14">14号线</label></div>
+            <div class="option"><input type="checkbox" id="s15"><label for="s15">15号线</label></div>
+            <div class="option"><input type="checkbox" id="s16"><label for="s16">16号线</label></div>
+            <div class="option"><input type="checkbox" id="s17"><label for="s17">17号线</label></div>
+            <div class="option"><input type="checkbox" id="s18"><label for="s18">18号线</label></div>
+            <div class="option"><input type="checkbox" id="s19"><label for="s19">浦江线</label></div>
+          </div>
+        </div>
+
+        <div class="location-content" id="commute">
+          <div class="subgroup-title">可接受的单程通勤时间</div>
+          <div class="option-grid" data-group="通勤">
+            <div class="option"><input type="radio" name="commute" id="c0" data-all="true" checked><label for="c0">全部</label></div>
+            <div class="option"><input type="radio" name="commute" id="c1"><label for="c1">30分钟内</label></div>
+            <div class="option"><input type="radio" name="commute" id="c2"><label for="c2">45分钟内</label></div>
+            <div class="option"><input type="radio" name="commute" id="c3"><label for="c3">60分钟内</label></div>
+            <div class="option"><input type="radio" name="commute" id="c4"><label for="c4">90分钟内</label></div>
+          </div>
+        </div>
+
+        <div class="location-content" id="landmark">
+          <div class="subgroup-title">输入学校、公司或产业园区</div>
+          <div class="inline-inputs">
+            <input class="small-input" style="width:min(100%,360px)" id="landmarkInput" placeholder="如：同济大学、张江高科" />
+          </div>
+        </div>
+      </div>
+
+      <div class="section">
+        <div class="section-head"><div class="section-title">租赁方式</div></div>
+        <div class="option-grid" data-group="方式">
+          <div class="option"><input type="checkbox" id="m0" data-all="true" checked><label for="m0">全部</label></div>
+          <div class="option"><input type="checkbox" id="m1"><label for="m1">整租</label></div>
+          <div class="option"><input type="checkbox" id="m2"><label for="m2">合租</label></div>
+          <div class="option"><input type="checkbox" id="m3"><label for="m3">单间</label></div>
+          <div class="option"><input type="checkbox" id="m4"><label for="m4">主卧</label></div>
+          <div class="option"><input type="checkbox" id="m5"><label for="m5">次卧</label></div>
+          <div class="option"><input type="checkbox" id="m6"><label for="m6">短租</label></div>
+          <div class="option"><input type="checkbox" id="m7"><label for="m7">月租</label></div>
+        </div>
+        <div class="subgroup collapsed" id="roommateGroup">
+          <div class="subgroup-title">合租偏好</div>
+          <div class="option-grid" data-group="合租偏好">
+            <div class="option"><input type="checkbox" id="rm1"><label for="rm1">同性室友</label></div>
+            <div class="option"><input type="checkbox" id="rm2"><label for="rm2">作息规律</label></div>
+            <div class="option"><input type="checkbox" id="rm3"><label for="rm3">不吸烟</label></div>
+            <div class="option"><input type="checkbox" id="rm4"><label for="rm4">学生 / 备考人群</label></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="section">
+        <div class="section-head"><div class="section-title">租金</div><div class="section-note">支持标价租金与综合成本</div></div>
+        <div class="tab-row" id="rentModeTabs">
+          <button class="tab active" data-rentmode="rent">标价租金</button>
+          <button class="tab" data-rentmode="total">月度综合成本</button>
+        </div>
+        <div class="option-grid" data-group="租金">
+          <div class="option"><input type="radio" name="rent" id="p0" data-all="true" checked><label for="p0">全部</label></div>
+          <div class="option"><input type="radio" name="rent" id="p1"><label for="p1">1000元以下</label></div>
+          <div class="option"><input type="radio" name="rent" id="p2"><label for="p2">1000–1500元</label></div>
+          <div class="option"><input type="radio" name="rent" id="p3"><label for="p3">1500–2000元</label></div>
+          <div class="option"><input type="radio" name="rent" id="p4"><label for="p4">2000–2500元</label></div>
+          <div class="option"><input type="radio" name="rent" id="p5"><label for="p5">2500–3000元</label></div>
+          <div class="option"><input type="radio" name="rent" id="p6"><label for="p6">3000–5000元</label></div>
+          <div class="option"><input type="radio" name="rent" id="p7"><label for="p7">5000元以上</label></div>
+        </div>
+        <div class="inline-inputs">
+          <input class="small-input" id="minRent" type="number" placeholder="最低租金">
+          <span>—</span>
+          <input class="small-input" id="maxRent" type="number" placeholder="最高租金">
+          <span>元 / 月</span>
+        </div>
+      </div>
+
+      <div class="section">
+        <div class="section-head"><div class="section-title">户型与面积</div></div>
+        <div class="subgroup-title">户型</div>
+        <div class="option-grid" data-group="户型">
+          <div class="option"><input type="checkbox" id="h0" data-all="true" checked><label for="h0">全部</label></div>
+          <div class="option"><input type="checkbox" id="h1"><label for="h1">开间</label></div>
+          <div class="option"><input type="checkbox" id="h2"><label for="h2">一居室</label></div>
+          <div class="option"><input type="checkbox" id="h3"><label for="h3">两居室</label></div>
+          <div class="option"><input type="checkbox" id="h4"><label for="h4">三居室</label></div>
+          <div class="option"><input type="checkbox" id="h5"><label for="h5">四居室及以上</label></div>
+          <div class="option"><input type="checkbox" id="h6"><label for="h6">独立卫浴房间</label></div>
+        </div>
+        <div class="subgroup">
+          <div class="subgroup-title">面积</div>
+          <div class="option-grid" data-group="面积">
+            <div class="option"><input type="radio" name="area" id="a0" data-all="true" checked><label for="a0">全部</label></div>
+            <div class="option"><input type="radio" name="area" id="a1"><label for="a1">20㎡以下</label></div>
+            <div class="option"><input type="radio" name="area" id="a2"><label for="a2">20–40㎡</label></div>
+            <div class="option"><input type="radio" name="area" id="a3"><label for="a3">40–60㎡</label></div>
+            <div class="option"><input type="radio" name="area" id="a4"><label for="a4">60–90㎡</label></div>
+            <div class="option"><input type="radio" name="area" id="a5"><label for="a5">90㎡以上</label></div>
+          </div>
+        </div>
+      </div>
+
+      <button class="more-btn" id="moreBtn">展开更多筛选</button>
+
+      <div id="advanced" class="collapsed">
+        <div class="section">
+          <div class="section-head">
+            <div class="section-title">品牌与运营方</div>
+            <div class="section-note">参考主流平台的品牌筛选</div>
+          </div>
+          <div class="option-grid" data-group="品牌">
+            <div class="option"><input type="checkbox" id="brand0" data-all="true" checked><label for="brand0">全部</label></div>
+            <div class="option"><input type="checkbox" id="brand1"><label for="brand1">贝壳省心租</label></div>
+            <div class="option"><input type="checkbox" id="brand2"><label for="brand2">链家</label></div>
+            <div class="option"><input type="checkbox" id="brand3"><label for="brand3">自如</label></div>
+            <div class="option"><input type="checkbox" id="brand4"><label for="brand4">魔方公寓</label></div>
+            <div class="option"><input type="checkbox" id="brand5"><label for="brand5">泊寓</label></div>
+            <div class="option"><input type="checkbox" id="brand6"><label for="brand6">城家公寓</label></div>
+            <div class="option"><input type="checkbox" id="brand7"><label for="brand7">其他品牌公寓</label></div>
+          </div>
+        </div>
+
+        <div class="section">
+          <div class="section-head">
+            <div class="section-title">房屋基础条件</div>
+            <div class="section-note">将朝向、装修、楼层和电梯分组展示</div>
+          </div>
+
+          <div class="subgroup">
+            <div class="subgroup-title">朝向</div>
+            <div class="option-grid" data-group="朝向">
+              <div class="option"><input type="checkbox" id="ori0" data-all="true" checked><label for="ori0">全部</label></div>
+              <div class="option"><input type="checkbox" id="ori1"><label for="ori1">东</label></div>
+              <div class="option"><input type="checkbox" id="ori2"><label for="ori2">西</label></div>
+              <div class="option"><input type="checkbox" id="ori3"><label for="ori3">南</label></div>
+              <div class="option"><input type="checkbox" id="ori4"><label for="ori4">北</label></div>
+              <div class="option"><input type="checkbox" id="ori5"><label for="ori5">南北通透</label></div>
+            </div>
+          </div>
+
+          <div class="subgroup">
+            <div class="subgroup-title">装修</div>
+            <div class="option-grid" data-group="装修">
+              <div class="option"><input type="checkbox" id="dec0" data-all="true" checked><label for="dec0">全部</label></div>
+              <div class="option"><input type="checkbox" id="dec1"><label for="dec1">精装修</label></div>
+              <div class="option"><input type="checkbox" id="dec2"><label for="dec2">简单装修</label></div>
+              <div class="option"><input type="checkbox" id="dec3"><label for="dec3">毛坯</label></div>
+              <div class="option"><input type="checkbox" id="dec4"><label for="dec4">拎包入住</label></div>
+            </div>
+          </div>
+
+          <div class="subgroup">
+            <div class="subgroup-title">楼层</div>
+            <div class="option-grid" data-group="楼层">
+              <div class="option"><input type="radio" name="floor" id="floor0" data-all="true" checked><label for="floor0">全部</label></div>
+              <div class="option"><input type="radio" name="floor" id="floor1"><label for="floor1">低楼层</label></div>
+              <div class="option"><input type="radio" name="floor" id="floor2"><label for="floor2">中楼层</label></div>
+              <div class="option"><input type="radio" name="floor" id="floor3"><label for="floor3">高楼层</label></div>
+            </div>
+          </div>
+
+          <div class="subgroup">
+            <div class="subgroup-title">电梯</div>
+            <div class="option-grid" data-group="电梯">
+              <div class="option"><input type="radio" name="elevator" id="elevator0" data-all="true" checked><label for="elevator0">全部</label></div>
+              <div class="option"><input type="radio" name="elevator" id="elevator1"><label for="elevator1">有电梯</label></div>
+              <div class="option"><input type="radio" name="elevator" id="elevator2"><label for="elevator2">无电梯</label></div>
+            </div>
+          </div>
+
+          <div class="subgroup">
+            <div class="subgroup-title">房屋配置</div>
+            <div class="option-grid" data-group="房屋配置">
+              <div class="option"><input type="checkbox" id="config0" data-all="true" checked><label for="config0">全部</label></div>
+              <div class="option"><input type="checkbox" id="config1"><label for="config1">独立卫生间</label></div>
+              <div class="option"><input type="checkbox" id="config2"><label for="config2">有阳台</label></div>
+              <div class="option"><input type="checkbox" id="config3"><label for="config3">可做饭</label></div>
+              <div class="option"><input type="checkbox" id="config4"><label for="config4">家具齐全</label></div>
+              <div class="option"><input type="checkbox" id="config5"><label for="config5">配备空调</label></div>
+              <div class="option"><input type="checkbox" id="config6"><label for="config6">采光良好</label></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="section">
+          <div class="section-head">
+            <div class="section-title">租期</div>
+            <div class="section-note">补充竞品常见的短租与起租时间筛选</div>
+          </div>
+          <div class="option-grid" data-group="租期">
+            <div class="option"><input type="checkbox" id="term0" data-all="true" checked><label for="term0">全部</label></div>
+            <div class="option"><input type="checkbox" id="term1"><label for="term1">月租</label></div>
+            <div class="option"><input type="checkbox" id="term2"><label for="term2">年租</label></div>
+            <div class="option"><input type="checkbox" id="term3"><label for="term3">1个月起租</label></div>
+            <div class="option"><input type="checkbox" id="term4"><label for="term4">1—3个月</label></div>
+            <div class="option"><input type="checkbox" id="term5"><label for="term5">4—6个月</label></div>
+            <div class="option"><input type="checkbox" id="term6"><label for="term6">半年租</label></div>
+            <div class="option"><input type="checkbox" id="term7"><label for="term7">可续租</label></div>
+          </div>
+        </div>
+
+        <div class="section">
+          <div class="section-head">
+            <div class="section-title">特色与看房方式</div>
+          </div>
+          <div class="option-grid" data-group="特色">
+            <div class="option"><input type="checkbox" id="feature0" data-all="true" checked><label for="feature0">全部</label></div>
+            <div class="option"><input type="checkbox" id="feature1"><label for="feature1">近地铁</label></div>
+            <div class="option"><input type="checkbox" id="feature2"><label for="feature2">新上房源</label></div>
+            <div class="option"><input type="checkbox" id="feature3"><label for="feature3">认证公寓</label></div>
+            <div class="option"><input type="checkbox" id="feature4"><label for="feature4">随时看房</label></div>
+            <div class="option"><input type="checkbox" id="feature5"><label for="feature5">VR房源</label></div>
+            <div class="option"><input type="checkbox" id="feature6"><label for="feature6">视频看房</label></div>
+            <div class="option"><input type="checkbox" id="feature7"><label for="feature7">业主自荐</label></div>
+            <div class="option"><input type="checkbox" id="feature8"><label for="feature8">只看有图</label></div>
+          </div>
+        </div>
+
+        <div class="section">
+          <div class="section-head"><div class="section-title">租赁条件</div></div>
+          <div class="option-grid" data-group="租赁条件">
+            <div class="option"><input type="checkbox" id="lease0" data-all="true" checked><label for="lease0">全部</label></div>
+            <div class="option"><input type="checkbox" id="lease1"><label for="lease1">押一付一</label></div>
+            <div class="option"><input type="checkbox" id="lease2"><label for="lease2">无中介费</label></div>
+            <div class="option"><input type="checkbox" id="lease3"><label for="lease3">无服务费</label></div>
+            <div class="option"><input type="checkbox" id="lease4"><label for="lease4">支持转租</label></div>
+            <div class="option"><input type="checkbox" id="lease5"><label for="lease5">可办理居住登记</label></div>
+            <div class="option"><input type="checkbox" id="lease6"><label for="lease6">近期可入住</label></div>
+            <div class="option"><input type="checkbox" id="lease7"><label for="lease7">可线上签约</label></div>
+          </div>
+        </div>
+
+        <div class="section">
+          <div class="section-head"><div class="section-title">生活偏好</div></div>
+          <div class="option-grid" data-group="生活偏好">
+            <div class="option"><input type="checkbox" id="life0" data-all="true" checked><label for="life0">全部</label></div>
+            <div class="option"><input type="checkbox" id="life1"><label for="life1">允许养宠物</label></div>
+            <div class="option"><input type="checkbox" id="life2"><label for="life2">环境安静</label></div>
+            <div class="option"><input type="checkbox" id="life3"><label for="life3">网络稳定</label></div>
+            <div class="option"><input type="checkbox" id="life4"><label for="life4">配备书桌</label></div>
+            <div class="option"><input type="checkbox" id="life5"><label for="life5">靠近自习室</label></div>
+            <div class="option"><input type="checkbox" id="life6"><label for="life6">靠近高校</label></div>
+            <div class="option"><input type="checkbox" id="life7"><label for="life7">靠近餐饮便利店</label></div>
+            <div class="option"><input type="checkbox" id="life8"><label for="life8">有停车位</label></div>
+            <div class="option"><input type="checkbox" id="life9"><label for="life9">支持电动车充电</label></div>
+          </div>
+        </div>
+
+        <div class="section">
+          <div class="section-head"><div class="section-title">房源来源与可信度</div></div>
+          <div class="option-grid" data-group="房源保障">
+            <div class="option"><input type="checkbox" id="trust0" data-all="true" checked><label for="trust0">全部</label></div>
+            <div class="option"><input type="checkbox" id="trust1"><label for="trust1">个人房东直租</label></div>
+            <div class="option"><input type="checkbox" id="trust2"><label for="trust2">经纪人房源</label></div>
+            <div class="option"><input type="checkbox" id="trust3"><label for="trust3">品牌公寓</label></div>
+            <div class="option"><input type="checkbox" id="trust4"><label for="trust4">平台认证房源</label></div>
+            <div class="option"><input type="checkbox" id="trust5"><label for="trust5">官方核验房源</label></div>
+            <div class="option"><input type="checkbox" id="trust6"><label for="trust6">近期核验</label></div>
+            <div class="option"><input type="checkbox" id="trust7"><label for="trust7">价格已核验</label></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="footer-actions">
+        <button class="ghost-btn" id="clearBtn">清空条件</button>
+        <button class="primary-btn" id="applyBtn">应用筛选</button>
+      </div>
+    </section>
+
+    <aside class="panel summary-panel">
+      <div class="summary-title">筛选结果预览</div>
+      <div class="count-box">
+        <div class="count" id="resultCount">286</div>
+        <div class="count-label">符合条件的示例房源数量</div>
+      </div>
+
+      <div class="summary-block">
+        <div class="summary-label">已选条件</div>
+        <div class="selected-list" id="selectedList">
+          <span class="empty">尚未选择筛选条件</span>
+        </div>
+      </div>
+
+      <div class="summary-block">
+        <div class="summary-label">排序方式</div>
+        <select class="sort-select" id="sortSelect">
+          <option>综合推荐</option>
+          <option>最新发布</option>
+          <option>租金从低到高</option>
+          <option>租金从高到低</option>
+          <option>距离从近到远</option>
+          <option>通勤时间从短到长</option>
+          <option>匹配度从高到低</option>
+          <option>房源可信度从高到低</option>
+        </select>
+      </div>
+
+      <div class="summary-block">
+        <div class="switch-row">
+          <div>
+            <div style="font-weight:700">保存当前筛选</div>
+            <div class="section-note">仅保留本次筛选方案</div>
+          </div>
+          <div class="switch" id="saveSwitch"></div>
+        </div>
+      </div>
+
+      <div class="summary-block">
+        <div class="switch-row">
+          <div>
+            <div style="font-weight:700">新房源提醒</div>
+            <div class="section-note">出现符合条件房源时提醒</div>
+          </div>
+          <div class="switch" id="noticeSwitch"></div>
+        </div>
+      </div>
+
+      <div id="hintArea">
+        <div class="ok-box">当前条件较宽松，适合先浏览整体房源，再逐步缩小范围。</div>
+      </div>
+    </aside>
+
+
+    <section class="sample-house-panel" id="sampleHousePanel">
+      <div class="sample-house-head">
+        <div>
+          <div class="sample-house-title">示例在租房源</div>
+          <div class="sample-house-note">以下房源为功能演示数据，不代表真实房源；采用两列竞品式排布，筛选条件变化会得到不同结果。</div>
+        </div>
+        <div class="sample-house-total">当前显示 <strong id="sampleHouseCount">0</strong> 套</div>
+      </div>
+      <div class="sample-house-grid" id="sampleHouseGrid"></div>
+    </section>
+  </main>
+
+
+  
+  <main class="house-detail-module is-hidden" id="houseDetailModule">
+    <div class="detail-container" id="houseDetailContent"></div>
+  </main>
+  <div class="detail-toast" id="detailToast"></div>
+
+
+  <main class="ai-wrap is-hidden" id="aiModule">
+    <section class="ai-workspace">
+      <div class="ai-title-row">
+        <div>
+          <button class="ai-back-filter-btn" id="backToFilterBtn" type="button">← 返回常规筛选</button>
+          <h1 class="ai-title">AI智能选房</h1>
+          <p class="ai-subtitle">用一句话描述你的预算、地点、通勤和生活偏好，系统会整理需求、补充追问并生成可解释的房源推荐。</p>
+        </div>
+        <span class="demo-badge">规则模拟演示</span>
+      </div>
+
+      <div class="scenario-label">快速选择租房场景</div>
+      <div class="scenario-row" id="scenarioRow">
+        <button class="scenario-btn" data-scenario="应届毕业生">应届毕业生</button>
+        <button class="scenario-btn" data-scenario="考研备考">考研备考</button>
+        <button class="scenario-btn" data-scenario="异地就业">异地就业</button>
+        <button class="scenario-btn" data-scenario="通勤优先">通勤优先</button>
+        <button class="scenario-btn" data-scenario="低预算">低预算</button>
+        <button class="scenario-btn" data-scenario="宠物友好">宠物友好</button>
+      </div>
+
+      <div class="ai-chat" id="aiChat">
+        <div class="chat-message assistant">
+          <div class="chat-avatar">AI</div>
+          <div class="chat-bubble">你好，我是AI选房助手。你可以告诉我：在哪里上班或学习、每月预算、可接受的通勤时间，以及对整租、合租、安静程度、宠物等方面的要求。</div>
+        </div>
+      </div>
+
+      <div class="ai-input-area">
+        <textarea id="aiNeedInput" placeholder="例如：我准备在同济大学附近考研，预算2500元以内，可以合租，希望安静、有书桌，通勤不超过30分钟。"></textarea>
+        <button class="ai-main-btn" id="parseNeedBtn">解析需求</button>
+      </div>
+
+      <div class="example-row">
+        <span>示例：</span>
+        <button class="example-btn" data-example="我在张江高科上班，预算3500元以内，希望整租，地铁通勤45分钟内，可以养猫。">张江上班族</button>
+        <button class="example-btn" data-example="我准备在同济大学附近考研，预算2500元以内，可以合租，希望安静、有书桌，通勤不超过30分钟。">考研备考生</button>
+        <button class="example-btn" data-example="刚毕业到上海工作，预算2000元左右，接受合租，最好押一付一、离地铁近。">应届毕业生</button>
+      </div>
+
+      <section class="followup-panel is-hidden" id="followupPanel">
+        <div class="followup-head">
+          <div class="followup-title">需求确认与补充</div>
+          <div class="followup-tip">AI已将自然语言转换为可筛选条件，你可以继续修改</div>
+        </div>
+
+        <div class="followup-grid">
+          <div class="field">
+            <label for="aiDestination">工作 / 学习地点</label>
+            <input id="aiDestination" placeholder="如：张江高科、同济大学">
+          </div>
+          <div class="field">
+            <label for="aiBudget">最高月预算（元）</label>
+            <input id="aiBudget" type="number" placeholder="如：3000">
+          </div>
+          <div class="field">
+            <label for="aiCommute">最长单程通勤</label>
+            <select id="aiCommute">
+              <option value="">暂不限制</option>
+              <option value="30">30分钟以内</option>
+              <option value="45">45分钟以内</option>
+              <option value="60">60分钟以内</option>
+              <option value="90">90分钟以内</option>
+            </select>
+          </div>
+          <div class="field">
+            <label for="aiRentalType">租赁方式</label>
+            <select id="aiRentalType">
+              <option value="">尚未确定</option>
+              <option value="整租">整租</option>
+              <option value="合租">合租</option>
+              <option value="均可">整租、合租均可</option>
+            </select>
+          </div>
+          <div class="field">
+            <label for="aiLeaseTerm">租期</label>
+            <select id="aiLeaseTerm">
+              <option value="">尚未确定</option>
+              <option value="月租">月租</option>
+              <option value="1—3个月">1—3个月</option>
+              <option value="4—6个月">4—6个月</option>
+              <option value="半年租">半年租</option>
+              <option value="年租">年租</option>
+            </select>
+          </div>
+          <div class="field">
+            <label for="aiPriority">最重要的条件</label>
+            <select id="aiPriority">
+              <option value="综合均衡">综合均衡</option>
+              <option value="预算优先">预算优先</option>
+              <option value="通勤优先">通勤优先</option>
+              <option value="居住环境优先">居住环境优先</option>
+            </select>
+          </div>
+
+          <div class="field preference-box">
+            <label>生活与房屋偏好（可多选）</label>
+            <div class="preference-options" id="aiPreferences">
+              <label class="pref-option"><input type="checkbox" value="近地铁">近地铁</label>
+              <label class="pref-option"><input type="checkbox" value="环境安静">环境安静</label>
+              <label class="pref-option"><input type="checkbox" value="允许养宠物">允许养宠物</label>
+              <label class="pref-option"><input type="checkbox" value="配备书桌">配备书桌</label>
+              <label class="pref-option"><input type="checkbox" value="采光良好">采光良好</label>
+              <label class="pref-option"><input type="checkbox" value="独立卫生间">独立卫生间</label>
+              <label class="pref-option"><input type="checkbox" value="押一付一">押一付一</label>
+              <label class="pref-option"><input type="checkbox" value="无中介费">无中介费</label>
+              <label class="pref-option"><input type="checkbox" value="靠近自习室">靠近自习室</label>
+            </div>
+          </div>
+        </div>
+
+        <div class="followup-actions">
+          <button class="ai-secondary-btn" id="addQuestionBtn">模拟AI继续追问</button>
+          <button class="ai-recommend-btn" id="recommendBtn">确认需求并推荐</button>
+        </div>
+      </section>
+
+      <section class="recommend-section is-hidden" id="recommendSection">
+        <div class="recommend-head">
+          <div>
+            <div class="recommend-title">AI推荐结果</div>
+            <div class="recommend-desc" id="recommendSummary">按照预算、通勤、租赁方式和生活偏好综合排序</div>
+            <div class="recommend-click-tip">点击房源卡片任意位置进入详情；“加入对比”仅用于横向比较，不会跳转。</div>
+          </div>
+          <button class="ai-secondary-btn" id="refreshRecommendBtn">重新计算</button>
+        </div>
+        <div class="recommend-list" id="recommendList"></div>
+      </section>
+
+      <section class="ai-compare-section is-hidden" id="aiCompareSection">
+        <div class="ai-compare-head">
+          <div>
+            <div class="ai-compare-title">房源横向对比</div>
+            <div class="ai-compare-subtitle">
+              当多套房源都符合需求但难以取舍时，对比功能会把价格、综合成本、通勤、面积、配置和缺点放在同一张表中，并给出综合最推荐、最低成本和最短通勤结论。
+            </div>
+          </div>
+          <div class="ai-compare-actions">
+            <button class="compare-clear-all" id="clearCompareBtn" type="button">清空对比</button>
+            <button class="compare-close-btn" id="closeCompareBtn" type="button">收起</button>
+          </div>
+        </div>
+        <div class="compare-conclusion" id="compareConclusion"></div>
+        <div class="compare-table-wrap" id="compareTableWrap"></div>
+      </section>
+    </section>
+
+    <aside class="ai-profile">
+      <div class="profile-title">当前租房画像</div>
+      <div class="profile-subtitle">需求越完整，推荐结果越准确</div>
+
+      <div class="profile-progress">
+        <div class="progress-info">
+          <span>需求完整度</span>
+          <strong id="profileProgressText">20%</strong>
+        </div>
+        <div class="progress-track"><div class="progress-bar" id="profileProgressBar"></div></div>
+      </div>
+
+      <div class="profile-group">
+        <div class="profile-group-title">用户场景</div>
+        <div class="profile-tags" id="scenarioTags"><span class="profile-empty">尚未选择</span></div>
+      </div>
+
+      <div class="profile-group">
+        <div class="profile-group-title">基本条件</div>
+        <div class="profile-detail"><span>地点</span><span id="profileDestination">待补充</span></div>
+        <div class="profile-detail"><span>预算</span><span id="profileBudget">待补充</span></div>
+        <div class="profile-detail"><span>通勤</span><span id="profileCommute">待补充</span></div>
+        <div class="profile-detail"><span>方式</span><span id="profileRental">待补充</span></div>
+        <div class="profile-detail"><span>租期</span><span id="profileLease">待补充</span></div>
+      </div>
+
+      <div class="profile-group">
+        <div class="profile-group-title">生活偏好</div>
+        <div class="profile-tags" id="preferenceTags"><span class="profile-empty">尚未识别</span></div>
+      </div>
+
+      <div class="profile-group">
+        <div class="profile-group-title">AI识别说明</div>
+        <div class="profile-detail"><span>推荐逻辑</span><span id="profilePriority">综合均衡</span></div>
+        <div class="profile-detail"><span>信息状态</span><span id="profileStatus">等待描述需求</span></div>
+      </div>
+
+      <div class="profile-actions">
+        <button class="sync-filter-btn" id="syncFilterBtn">同步到常规筛选</button>
+        <button class="reset-ai-btn" id="resetAiBtn">重新开始</button>
+      </div>
+
+      <div class="compare-dock" id="compareDock">对比栏：尚未加入房源，可从推荐结果中选择2—3套房源。</div>
+    </aside>
+  </main>
+
+
+  <script>
+    const inputs = [...document.querySelectorAll('#filterModule input[type="checkbox"], #filterModule input[type="radio"]')];
+    const resultCount = document.getElementById('resultCount');
+    const selectedList = document.getElementById('selectedList');
+    const hintArea = document.getElementById('hintArea');
+    const keyword = document.getElementById('keyword');
+    const landmarkInput = document.getElementById('landmarkInput');
+    const minRent = document.getElementById('minRent');
+    const maxRent = document.getElementById('maxRent');
+    const roommateGroup = document.getElementById('roommateGroup');
+
+    function labelText(input){
+      const label = document.querySelector(`label[for="${input.id}"]`);
+      return label ? label.textContent.trim() : "";
+    }
+
+    function selectedValues(){
+      const values = [];
+      inputs.filter(i => i.checked && !i.dataset.all).forEach(i => values.push({id:i.id,text:labelText(i)}));
+      if(keyword.value.trim()) values.push({id:'keyword',text:'搜索：'+keyword.value.trim()});
+      if(landmarkInput.value.trim()) values.push({id:'landmark',text:'地点：'+landmarkInput.value.trim()});
+      if(minRent.value || maxRent.value){
+        values.push({id:'customRent',text:`租金：${minRent.value || 0}–${maxRent.value || '不限'}元`});
+      }
+      return values;
+    }
+
+
+    const sampleHouseGrid = document.getElementById('sampleHouseGrid');
+    const sampleHouseCount = document.getElementById('sampleHouseCount');
+    const sortSelect = document.getElementById('sortSelect');
+
+    const sampleHouses = [
+      {
+        id:1,name:'示例出租屋1',area:'浦东新区',subways:['2号线'],commute:28,
+        rental:['整租','月租'],roommate:[],price:4200,layouts:['一居室'],size:46,
+        brand:'贝壳省心租',orientation:['南'],decoration:['精装修','拎包入住'],
+        floor:'中楼层',elevator:'有电梯',
+        configs:['独立卫生间','有阳台','可做饭','家具齐全','配备空调','采光良好'],
+        terms:['月租','年租','可续租'],features:['近地铁','随时看房','VR房源','只看有图'],
+        leases:['押一付一','可办理居住登记','近期可入住','可线上签约'],
+        life:['网络稳定','靠近餐饮便利店','有停车位'],
+        trust:['经纪人房源','平台认证房源','官方核验房源','近期核验','价格已核验'],
+        keywords:['张江高科','世纪大道','电梯房'],hasPhoto:true,credibility:98,newness:12
+      },
+      {
+        id:2,name:'示例出租屋2',area:'杨浦区',subways:['10号线'],commute:18,
+        rental:['合租','单间','主卧','月租'],roommate:['同性室友','作息规律','不吸烟','学生 / 备考人群'],
+        price:2450,layouts:['独立卫浴房间'],size:18,brand:'自如',
+        orientation:['东'],decoration:['精装修','拎包入住'],floor:'中楼层',elevator:'有电梯',
+        configs:['独立卫生间','家具齐全','配备空调'],
+        terms:['月租','1个月起租','半年租','可续租'],
+        features:['近地铁','认证公寓','视频看房','只看有图'],
+        leases:['押一付一','无中介费','近期可入住','可线上签约'],
+        life:['环境安静','网络稳定','配备书桌','靠近自习室','靠近高校','靠近餐饮便利店'],
+        trust:['品牌公寓','平台认证房源','近期核验','价格已核验'],
+        keywords:['同济大学','五角场','考研'],hasPhoto:false,credibility:96,newness:6
+      },
+      {
+        id:3,name:'示例出租屋3',area:'徐汇区',subways:['1号线','9号线'],commute:30,
+        rental:['整租','短租','月租'],roommate:[],price:3800,layouts:['开间'],size:32,
+        brand:'城家公寓',orientation:['西'],decoration:['精装修','拎包入住'],
+        floor:'高楼层',elevator:'有电梯',
+        configs:['独立卫生间','可做饭','家具齐全','配备空调','采光良好'],
+        terms:['月租','1—3个月','4—6个月','可续租'],
+        features:['近地铁','认证公寓','新上房源','随时看房','视频看房'],
+        leases:['押一付一','无中介费','可线上签约'],
+        life:['允许养宠物','网络稳定','靠近餐饮便利店'],
+        trust:['品牌公寓','平台认证房源','官方核验房源','近期核验'],
+        keywords:['徐家汇','漕河泾','宠物友好'],hasPhoto:true,credibility:94,newness:2
+      },
+      {
+        id:4,name:'示例出租屋4',area:'静安区',subways:['7号线'],commute:35,
+        rental:['合租','单间','次卧','短租','月租'],
+        roommate:['同性室友','作息规律','不吸烟','学生 / 备考人群'],
+        price:1900,layouts:[],size:14,brand:'其他品牌公寓',
+        orientation:['北'],decoration:['简单装修'],floor:'低楼层',elevator:'无电梯',
+        configs:['家具齐全','配备空调'],
+        terms:['月租','1个月起租','1—3个月'],
+        features:['新上房源','业主自荐','只看有图'],
+        leases:['押一付一','无中介费','无服务费','支持转租','近期可入住'],
+        life:['环境安静','网络稳定','配备书桌','靠近自习室','靠近高校'],
+        trust:['个人房东直租','价格已核验'],
+        keywords:['静安寺','备考','个人直租'],hasPhoto:false,credibility:82,newness:1
+      },
+      {
+        id:5,name:'示例出租屋5',area:'闵行区',subways:['5号线'],commute:43,
+        rental:['整租'],roommate:[],price:3200,layouts:['两居室'],size:68,
+        brand:'链家',orientation:['南北通透'],decoration:['简单装修'],
+        floor:'低楼层',elevator:'无电梯',
+        configs:['有阳台','可做饭','家具齐全','配备空调','采光良好'],
+        terms:['年租','可续租'],features:['业主自荐','随时看房','只看有图'],
+        leases:['可办理居住登记','近期可入住'],
+        life:['环境安静','靠近餐饮便利店','有停车位','支持电动车充电'],
+        trust:['经纪人房源','官方核验房源','价格已核验'],
+        keywords:['莘庄','老小区','两居室'],hasPhoto:true,credibility:91,newness:18
+      },
+      {
+        id:6,name:'示例出租屋6',area:'宝山区',subways:['3号线'],commute:55,
+        rental:['合租','单间','主卧','短租','月租'],
+        roommate:['作息规律','不吸烟'],price:1600,layouts:['独立卫浴房间'],size:22,
+        brand:'魔方公寓',orientation:['北'],decoration:['简单装修','拎包入住'],
+        floor:'高楼层',elevator:'有电梯',
+        configs:['独立卫生间','家具齐全','配备空调'],
+        terms:['月租','1—3个月','4—6个月'],
+        features:['认证公寓','新上房源','视频看房'],
+        leases:['押一付一','支持转租','近期可入住','可线上签约'],
+        life:['网络稳定','配备书桌','靠近餐饮便利店'],
+        trust:['品牌公寓','平台认证房源','近期核验'],
+        keywords:['淞滨路','短租','独卫'],hasPhoto:false,credibility:89,newness:3
+      },
+      {
+        id:7,name:'示例出租屋7',area:'松江区',subways:['9号线'],commute:48,
+        rental:['整租','月租'],roommate:[],price:2300,layouts:['一居室'],size:45,
+        brand:'泊寓',orientation:['南'],decoration:['精装修','拎包入住'],
+        floor:'中楼层',elevator:'有电梯',
+        configs:['独立卫生间','有阳台','可做饭','家具齐全','配备空调','采光良好'],
+        terms:['月租','半年租','可续租'],
+        features:['近地铁','认证公寓','VR房源','随时看房'],
+        leases:['押一付一','无中介费','无服务费','可线上签约'],
+        life:['允许养宠物','环境安静','网络稳定','有停车位','支持电动车充电'],
+        trust:['品牌公寓','平台认证房源','官方核验房源','价格已核验'],
+        keywords:['松江大学城','宠物友好','泊寓'],hasPhoto:true,credibility:97,newness:8
+      },
+      {
+        id:8,name:'示例出租屋8',area:'嘉定区',subways:['11号线'],commute:58,
+        rental:['整租'],roommate:[],price:2800,layouts:['两居室'],size:72,
+        brand:'链家',orientation:['南北通透'],decoration:['简单装修'],
+        floor:'高楼层',elevator:'无电梯',
+        configs:['有阳台','可做饭','家具齐全','配备空调','采光良好'],
+        terms:['年租'],features:['新上房源','业主自荐','只看有图'],
+        leases:['无服务费','可办理居住登记','近期可入住'],
+        life:['环境安静','靠近餐饮便利店','支持电动车充电'],
+        trust:['经纪人房源','官方核验房源','近期核验','价格已核验'],
+        keywords:['嘉定新城','两居','无电梯'],hasPhoto:false,credibility:93,newness:4
+      },
+      {
+        id:9,name:'示例出租屋9',area:'黄浦区',subways:['8号线','10号线'],commute:16,
+        rental:['整租','短租','月租'],roommate:[],price:5200,layouts:['开间'],size:25,
+        brand:'贝壳省心租',orientation:['南'],decoration:['精装修','拎包入住'],
+        floor:'高楼层',elevator:'有电梯',
+        configs:['独立卫生间','可做饭','家具齐全','配备空调','采光良好'],
+        terms:['月租','1个月起租','1—3个月'],
+        features:['近地铁','新上房源','随时看房','VR房源','只看有图'],
+        leases:['押一付一','可办理居住登记','近期可入住','可线上签约'],
+        life:['网络稳定','靠近餐饮便利店'],
+        trust:['经纪人房源','平台认证房源','官方核验房源','近期核验','价格已核验'],
+        keywords:['人民广场','新天地','市中心'],hasPhoto:true,credibility:99,newness:1
+      },
+      {
+        id:10,name:'示例出租屋10',area:'普陀区',subways:['13号线'],commute:32,
+        rental:['合租','单间','次卧','月租'],
+        roommate:['同性室友','作息规律','不吸烟'],
+        price:2100,layouts:[],size:16,brand:'自如',
+        orientation:['东'],decoration:['精装修','拎包入住'],
+        floor:'中楼层',elevator:'有电梯',
+        configs:['家具齐全','配备空调'],
+        terms:['月租','半年租','可续租'],
+        features:['近地铁','认证公寓','视频看房'],
+        leases:['押一付一','无中介费','可线上签约'],
+        life:['环境安静','网络稳定','配备书桌','靠近餐饮便利店'],
+        trust:['品牌公寓','平台认证房源','近期核验','价格已核验'],
+        keywords:['金沙江路','合租','女生室友'],hasPhoto:false,credibility:95,newness:10
+      },
+      {
+        id:11,name:'示例出租屋11',area:'长宁区',subways:['2号线'],commute:24,
+        rental:['整租','月租'],roommate:[],price:4800,layouts:['一居室'],size:50,
+        brand:'魔方公寓',orientation:['南'],decoration:['精装修','拎包入住'],
+        floor:'高楼层',elevator:'有电梯',
+        configs:['独立卫生间','有阳台','可做饭','家具齐全','配备空调','采光良好'],
+        terms:['月租','年租','可续租'],
+        features:['近地铁','认证公寓','随时看房','视频看房'],
+        leases:['押一付一','无中介费','可办理居住登记','可线上签约'],
+        life:['允许养宠物','网络稳定','靠近餐饮便利店','有停车位'],
+        trust:['品牌公寓','平台认证房源','官方核验房源','价格已核验'],
+        keywords:['虹桥','中山公园','宠物'],hasPhoto:true,credibility:96,newness:9
+      },
+      {
+        id:12,name:'示例出租屋12',area:'青浦区',subways:['17号线'],commute:67,
+        rental:['整租'],roommate:[],price:3600,layouts:['三居室'],size:98,
+        brand:'其他品牌公寓',orientation:['南北通透'],decoration:['简单装修'],
+        floor:'低楼层',elevator:'无电梯',
+        configs:['独立卫生间','有阳台','可做饭','家具齐全','配备空调','采光良好'],
+        terms:['年租','可续租'],features:['业主自荐','随时看房','只看有图'],
+        leases:['无中介费','无服务费','可办理居住登记','支持转租'],
+        life:['允许养宠物','环境安静','有停车位','支持电动车充电'],
+        trust:['个人房东直租','价格已核验'],
+        keywords:['青浦新城','三居室','家庭'],hasPhoto:false,credibility:84,newness:22
+      },
+      {
+        id:13,name:'示例出租屋13',area:'金山区',subways:[],commute:88,
+        rental:['合租','单间','短租','月租'],
+        roommate:['作息规律','不吸烟'],price:900,layouts:[],size:13,
+        brand:'其他品牌公寓',orientation:['北'],decoration:['简单装修'],
+        floor:'低楼层',elevator:'无电梯',
+        configs:['家具齐全'],
+        terms:['月租','1个月起租','1—3个月'],
+        features:['新上房源','业主自荐','只看有图'],
+        leases:['押一付一','无中介费','无服务费','近期可入住'],
+        life:['环境安静','支持电动车充电'],
+        trust:['个人房东直租','价格已核验'],
+        keywords:['金山卫','超低预算','短租'],hasPhoto:true,credibility:76,newness:2
+      },
+      {
+        id:14,name:'示例出租屋14',area:'奉贤区',subways:['5号线'],commute:75,
+        rental:['整租'],roommate:[],price:1450,layouts:['两居室'],size:62,
+        brand:'其他品牌公寓',orientation:['东'],decoration:['简单装修'],
+        floor:'中楼层',elevator:'有电梯',
+        configs:['有阳台','可做饭','家具齐全','配备空调'],
+        terms:['半年租','年租'],features:['只看有图'],
+        leases:['无中介费','无服务费','近期可入住'],
+        life:['环境安静','有停车位','支持电动车充电'],
+        trust:['个人房东直租','价格已核验'],
+        keywords:['奉贤新城','低预算整租','两居'],hasPhoto:false,credibility:80,newness:16
+      },
+      {
+        id:15,name:'示例出租屋15',area:'虹口区',subways:['4号线','10号线'],commute:22,
+        rental:['整租'],roommate:[],price:5800,layouts:['三居室'],size:92,
+        brand:'贝壳省心租',orientation:['南北通透'],decoration:['精装修','拎包入住'],
+        floor:'中楼层',elevator:'有电梯',
+        configs:['独立卫生间','有阳台','可做饭','家具齐全','配备空调','采光良好'],
+        terms:['年租','可续租'],features:['近地铁','随时看房','VR房源','视频看房'],
+        leases:['可办理居住登记','近期可入住','可线上签约'],
+        life:['网络稳定','靠近餐饮便利店','有停车位'],
+        trust:['经纪人房源','平台认证房源','官方核验房源','近期核验','价格已核验'],
+        keywords:['虹口足球场','三居室','改善型'],hasPhoto:true,credibility:99,newness:7
+      },
+      {
+        id:16,name:'示例出租屋16',area:'崇明区',subways:[],commute:90,
+        rental:['整租','短租'],roommate:[],price:2600,layouts:['四居室及以上'],size:125,
+        brand:'其他品牌公寓',orientation:['南北通透'],decoration:['简单装修'],
+        floor:'低楼层',elevator:'无电梯',
+        configs:['独立卫生间','有阳台','可做饭','家具齐全','采光良好'],
+        terms:['1—3个月','4—6个月','半年租'],
+        features:['业主自荐','随时看房','只看有图'],
+        leases:['无中介费','无服务费','支持转租'],
+        life:['允许养宠物','环境安静','有停车位','支持电动车充电'],
+        trust:['个人房东直租','价格已核验'],
+        keywords:['崇明岛','短租','大户型'],hasPhoto:false,credibility:78,newness:20
+      },
+      {
+        id:17,name:'示例出租屋17',area:'浦东新区',subways:['2号线'],commute:34,
+        rental:['合租','单间','次卧','月租'],roommate:['作息规律','不吸烟'],
+        price:2100,layouts:[],size:16,brand:'自如',
+        orientation:['东'],decoration:['精装修','拎包入住'],floor:'高楼层',elevator:'有电梯',
+        configs:['家具齐全','配备空调'],terms:['月租','半年租','可续租'],
+        features:['近地铁','认证公寓','视频看房'],leases:['押一付一','无中介费','可线上签约'],
+        life:['网络稳定','配备书桌','靠近餐饮便利店'],
+        trust:['品牌公寓','平台认证房源','近期核验','价格已核验'],
+        keywords:['张江高科','广兰路','合租次卧'],hasPhoto:true,credibility:95,newness:5
+      },
+      {
+        id:18,name:'示例出租屋18',area:'杨浦区',subways:['8号线','10号线'],commute:26,
+        rental:['整租'],roommate:[],price:6200,layouts:['两居室'],size:78,brand:'链家',
+        orientation:['南北通透'],decoration:['精装修'],floor:'中楼层',elevator:'有电梯',
+        configs:['独立卫生间','有阳台','可做饭','家具齐全','配备空调','采光良好'],
+        terms:['年租','可续租'],features:['近地铁','随时看房','VR房源'],
+        leases:['可办理居住登记','近期可入住'],life:['环境安静','网络稳定','有停车位'],
+        trust:['经纪人房源','官方核验房源','价格已核验'],
+        keywords:['五角场','两居室','改善型'],hasPhoto:false,credibility:97,newness:11
+      },
+      {
+        id:19,name:'示例出租屋19',area:'闵行区',subways:['1号线'],commute:38,
+        rental:['合租','单间','主卧','月租'],roommate:['同性室友','作息规律','不吸烟'],
+        price:1800,layouts:['独立卫浴房间'],size:20,brand:'魔方公寓',
+        orientation:['南'],decoration:['简单装修','拎包入住'],floor:'低楼层',elevator:'无电梯',
+        configs:['独立卫生间','家具齐全','配备空调','采光良好'],
+        terms:['月租','1—3个月','半年租'],features:['近地铁','认证公寓','只看有图'],
+        leases:['押一付一','无中介费','近期可入住'],life:['环境安静','配备书桌'],
+        trust:['品牌公寓','平台认证房源','价格已核验'],
+        keywords:['莘庄','主卧','独卫'],hasPhoto:true,credibility:90,newness:7
+      },
+      {
+        id:20,name:'示例出租屋20',area:'长宁区',subways:['2号线'],commute:20,
+        rental:['整租','短租','月租'],roommate:[],price:5200,layouts:['开间'],size:35,
+        brand:'城家公寓',orientation:['西'],decoration:['精装修','拎包入住'],
+        floor:'高楼层',elevator:'有电梯',
+        configs:['独立卫生间','可做饭','家具齐全','配备空调'],
+        terms:['月租','1个月起租','1—3个月'],features:['近地铁','认证公寓','新上房源','随时看房'],
+        leases:['押一付一','可线上签约'],life:['允许养宠物','网络稳定','靠近餐饮便利店'],
+        trust:['品牌公寓','官方核验房源','近期核验'],
+        keywords:['中山公园','短租开间','宠物'],hasPhoto:false,credibility:94,newness:2
+      },
+      {
+        id:21,name:'示例出租屋21',area:'普陀区',subways:['11号线'],commute:31,
+        rental:['整租','月租'],roommate:[],price:3600,layouts:['一居室'],size:43,
+        brand:'贝壳省心租',orientation:['南'],decoration:['精装修','拎包入住'],
+        floor:'中楼层',elevator:'有电梯',
+        configs:['独立卫生间','有阳台','可做饭','家具齐全','配备空调','采光良好'],
+        terms:['月租','年租','可续租'],features:['近地铁','随时看房','VR房源'],
+        leases:['押一付一','可办理居住登记','可线上签约'],
+        life:['环境安静','网络稳定','靠近餐饮便利店'],
+        trust:['经纪人房源','平台认证房源','官方核验房源','价格已核验'],
+        keywords:['真如','一居室','电梯'],hasPhoto:true,credibility:98,newness:13
+      },
+      {
+        id:22,name:'示例出租屋22',area:'虹口区',subways:['3号线'],commute:29,
+        rental:['合租','单间','次卧','月租'],roommate:['同性室友','学生 / 备考人群'],
+        price:2300,layouts:[],size:17,brand:'自如',
+        orientation:['北'],decoration:['精装修','拎包入住'],floor:'中楼层',elevator:'有电梯',
+        configs:['家具齐全','配备空调'],terms:['月租','半年租','可续租'],
+        features:['近地铁','认证公寓','视频看房'],leases:['押一付一','无中介费','可线上签约'],
+        life:['环境安静','网络稳定','配备书桌','靠近自习室'],
+        trust:['品牌公寓','平台认证房源','近期核验'],
+        keywords:['虹口足球场','备考合租','次卧'],hasPhoto:false,credibility:93,newness:8
+      },
+      {
+        id:23,name:'示例出租屋23',area:'奉贤区',subways:['5号线'],commute:64,
+        rental:['整租'],roommate:[],price:3000,layouts:['三居室'],size:96,
+        brand:'其他品牌公寓',orientation:['南北通透'],decoration:['简单装修'],
+        floor:'低楼层',elevator:'有电梯',
+        configs:['独立卫生间','有阳台','可做饭','家具齐全','配备空调','采光良好'],
+        terms:['半年租','年租'],features:['新上房源','业主自荐','只看有图'],
+        leases:['无中介费','无服务费','可办理居住登记'],
+        life:['允许养宠物','环境安静','有停车位','支持电动车充电'],
+        trust:['个人房东直租','价格已核验'],
+        keywords:['奉贤新城','三居室','家庭'],hasPhoto:true,credibility:85,newness:3
+      },
+      {
+        id:24,name:'示例出租屋24',area:'嘉定区',subways:['11号线'],commute:52,
+        rental:['合租','单间','主卧','月租'],roommate:['作息规律','不吸烟'],
+        price:1500,layouts:[],size:19,brand:'其他品牌公寓',
+        orientation:['东'],decoration:['简单装修'],floor:'高楼层',elevator:'无电梯',
+        configs:['家具齐全','配备空调'],terms:['月租','1个月起租','1—3个月'],
+        features:['近地铁','业主自荐','只看有图'],
+        leases:['押一付一','无中介费','无服务费','近期可入住'],
+        life:['网络稳定','配备书桌','支持电动车充电'],
+        trust:['个人房东直租','价格已核验'],
+        keywords:['嘉定新城','低预算主卧','个人直租'],hasPhoto:false,credibility:81,newness:1
+      },
+      {
+        id:25,name:'示例出租屋25',area:'浦东新区',subways:['2号线'],commute:24,
+        rental:['整租','月租'],roommate:[],price:3350,layouts:['一居室'],size:39,
+        brand:'城家公寓',orientation:['南'],decoration:['精装修','拎包入住'],
+        floor:'中楼层',elevator:'有电梯',
+        configs:['独立卫生间','可做饭','家具齐全','配备空调','采光良好'],
+        terms:['月租','半年租','年租','可续租'],
+        features:['近地铁','认证公寓','随时看房','视频看房'],
+        leases:['押一付一','无中介费','可线上签约'],
+        life:['允许养宠物','网络稳定','靠近餐饮便利店'],
+        trust:['品牌公寓','平台认证房源','近期核验','价格已核验'],
+        keywords:['张江高科','广兰路','张江上班族','宠物友好'],hasPhoto:true,credibility:96,newness:2
+      },
+      {
+        id:26,name:'示例出租屋26',area:'浦东新区',subways:['13号线'],commute:31,
+        rental:['整租','月租'],roommate:[],price:3480,layouts:['开间'],size:34,
+        brand:'泊寓',orientation:['东'],decoration:['精装修','拎包入住'],
+        floor:'高楼层',elevator:'有电梯',
+        configs:['独立卫生间','可做饭','家具齐全','配备空调'],
+        terms:['月租','半年租','年租'],
+        features:['近地铁','认证公寓','新上房源','VR房源'],
+        leases:['押一付一','无服务费','可线上签约'],
+        life:['允许养宠物','网络稳定','有停车位'],
+        trust:['品牌公寓','平台认证房源','官方核验房源','价格已核验'],
+        keywords:['张江高科','中科路','张江上班族'],hasPhoto:false,credibility:97,newness:1
+      },
+      {
+        id:27,name:'示例出租屋27',area:'杨浦区',subways:['10号线'],commute:16,
+        rental:['合租','单间','主卧','月租'],roommate:['同性室友','作息规律','不吸烟','学生 / 备考人群'],
+        price:2280,layouts:['独立卫浴房间'],size:19,brand:'自如',
+        orientation:['南'],decoration:['精装修','拎包入住'],
+        floor:'中楼层',elevator:'有电梯',
+        configs:['独立卫生间','家具齐全','配备空调','采光良好'],
+        terms:['月租','半年租','可续租'],
+        features:['近地铁','认证公寓','视频看房'],
+        leases:['押一付一','无中介费','可线上签约'],
+        life:['环境安静','网络稳定','配备书桌','靠近自习室','靠近高校'],
+        trust:['品牌公寓','平台认证房源','近期核验','价格已核验'],
+        keywords:['同济大学','四平路','考研备考','图书馆'],hasPhoto:true,credibility:97,newness:3
+      },
+      {
+        id:28,name:'示例出租屋28',area:'杨浦区',subways:['8号线'],commute:23,
+        rental:['合租','单间','次卧','月租'],roommate:['作息规律','不吸烟','学生 / 备考人群'],
+        price:1980,layouts:[],size:15,brand:'其他品牌公寓',
+        orientation:['东'],decoration:['简单装修','拎包入住'],
+        floor:'低楼层',elevator:'无电梯',
+        configs:['家具齐全','配备空调','采光良好'],
+        terms:['月租','1—3个月','半年租'],
+        features:['近地铁','只看有图'],
+        leases:['押一付一','无中介费','无服务费','近期可入住'],
+        life:['环境安静','网络稳定','配备书桌','靠近自习室','靠近高校'],
+        trust:['个人房东直租','价格已核验'],
+        keywords:['同济大学','黄兴路','考研备考','自习室'],hasPhoto:false,credibility:89,newness:4
+      },
+      {
+        id:29,name:'示例出租屋29',area:'普陀区',subways:['13号线'],commute:36,
+        rental:['合租','单间','次卧','月租'],roommate:['作息规律','不吸烟'],
+        price:1780,layouts:[],size:14,brand:'其他品牌公寓',
+        orientation:['东'],decoration:['简单装修','拎包入住'],
+        floor:'中楼层',elevator:'有电梯',
+        configs:['家具齐全','配备空调'],
+        terms:['月租','半年租','可续租'],
+        features:['近地铁','新上房源','只看有图'],
+        leases:['押一付一','无中介费','无服务费','近期可入住'],
+        life:['网络稳定','配备书桌','靠近餐饮便利店'],
+        trust:['个人房东直租','近期核验','价格已核验'],
+        keywords:['应届毕业生','金沙江路','低预算合租'],hasPhoto:true,credibility:88,newness:2
+      },
+      {
+        id:30,name:'示例出租屋30',area:'闵行区',subways:['1号线'],commute:42,
+        rental:['合租','单间','主卧','月租'],roommate:['同性室友','作息规律','不吸烟'],
+        price:1950,layouts:['独立卫浴房间'],size:20,brand:'魔方公寓',
+        orientation:['南'],decoration:['精装修','拎包入住'],
+        floor:'高楼层',elevator:'有电梯',
+        configs:['独立卫生间','家具齐全','配备空调','采光良好'],
+        terms:['月租','半年租','年租'],
+        features:['近地铁','认证公寓','视频看房'],
+        leases:['押一付一','无中介费','可线上签约'],
+        life:['网络稳定','配备书桌','靠近餐饮便利店'],
+        trust:['品牌公寓','平台认证房源','近期核验','价格已核验'],
+        keywords:['应届毕业生','莘庄','低预算合租'],hasPhoto:false,credibility:94,newness:5
+      }
+    ];
+
+    window.__sampleHouses = sampleHouses;
+
+    function getGroupSelections(groupName){
+      const grid = [...document.querySelectorAll('#filterModule .option-grid')]
+        .find(item => item.dataset.group === groupName);
+      if(!grid) return [];
+      return [...grid.querySelectorAll('input:checked')]
+        .filter(input => !input.dataset.all)
+        .map(input => labelText(input))
+        .filter(Boolean);
+    }
+
+    function matchesAny(values, selected){
+      return selected.length === 0 || selected.some(item => values.includes(item));
+    }
+
+    function matchesAll(values, selected){
+      return selected.length === 0 || selected.every(item => values.includes(item));
+    }
+
+    function getPriceRange(){
+      const selected = getGroupSelections('租金')[0];
+      const ranges = {
+        '1000元以下':[0,999],
+        '1000–1500元':[1000,1500],
+        '1500–2000元':[1500,2000],
+        '2000–2500元':[2000,2500],
+        '2500–3000元':[2500,3000],
+        '3000–5000元':[3000,5000],
+        '5000元以上':[5001,Infinity]
+      };
+      return ranges[selected] || [0,Infinity];
+    }
+
+    function getAreaRange(){
+      const selected = getGroupSelections('面积')[0];
+      const ranges = {
+        '20㎡以下':[0,19.99],
+        '20–40㎡':[20,40],
+        '40–60㎡':[40,60],
+        '60–90㎡':[60,90],
+        '90㎡以上':[90.01,Infinity]
+      };
+      return ranges[selected] || [0,Infinity];
+    }
+
+    function getCommuteLimit(){
+      const selected = getGroupSelections('通勤')[0];
+      return {'30分钟内':30,'45分钟内':45,'60分钟内':60,'90分钟内':90}[selected] || Infinity;
+    }
+
+    function getMatchedSampleHouses(){
+      const regions = getGroupSelections('区域');
+      const subways = getGroupSelections('地铁');
+      const rentalSelections = getGroupSelections('方式');
+      const roommateSelections = getGroupSelections('合租偏好');
+      const layouts = getGroupSelections('户型');
+      const brands = getGroupSelections('品牌');
+      const orientations = getGroupSelections('朝向');
+      const decorations = getGroupSelections('装修');
+      const floors = getGroupSelections('楼层');
+      const elevators = getGroupSelections('电梯');
+      const configs = getGroupSelections('房屋配置');
+      const terms = getGroupSelections('租期');
+      const features = getGroupSelections('特色');
+      const leases = getGroupSelections('租赁条件');
+      const life = getGroupSelections('生活偏好');
+      const trust = getGroupSelections('房源保障');
+
+      const [priceMin,priceMax] = getPriceRange();
+      const [areaMin,areaMax] = getAreaRange();
+      const customMin = Number(minRent.value || 0);
+      const customMax = Number(maxRent.value || Infinity);
+      const commuteLimit = getCommuteLimit();
+
+      const baseModeSelections = rentalSelections.filter(item => ['整租','合租'].includes(item));
+      const roomModeSelections = rentalSelections.filter(item => ['单间','主卧','次卧'].includes(item));
+      const rentalTermSelections = rentalSelections.filter(item => ['短租','月租'].includes(item));
+      const normalLayouts = layouts.filter(item => item !== '独立卫浴房间');
+      const needPrivateBathRoom = layouts.includes('独立卫浴房间');
+
+      const searchTokens = [keyword.value.trim(), landmarkInput.value.trim()]
+        .filter(Boolean)
+        .map(item => item.toLowerCase());
+
+      let matched = sampleHouses.filter(house => {
+        const searchable = [
+          house.name,house.area,...house.subways,...house.rental,...house.layouts,
+          house.brand,...house.orientation,...house.decoration,house.floor,house.elevator,
+          ...house.configs,...house.terms,...house.features,...house.leases,...house.life,
+          ...house.trust,...house.keywords
+        ].join(' ').toLowerCase();
+
+        return (
+          matchesAny([house.area], regions) &&
+          matchesAny(house.subways, subways) &&
+          matchesAny(house.rental, baseModeSelections) &&
+          matchesAny(house.rental, roomModeSelections) &&
+          matchesAll(house.rental, rentalTermSelections) &&
+          matchesAll(house.roommate, roommateSelections) &&
+          house.price >= priceMin && house.price <= priceMax &&
+          house.price >= customMin && house.price <= customMax &&
+          matchesAny(house.layouts, normalLayouts) &&
+          (!needPrivateBathRoom || house.configs.includes('独立卫生间')) &&
+          house.size >= areaMin && house.size <= areaMax &&
+          matchesAny([house.brand], brands) &&
+          matchesAny(house.orientation, orientations) &&
+          matchesAny(house.decoration, decorations) &&
+          matchesAny([house.floor], floors) &&
+          matchesAny([house.elevator], elevators) &&
+          matchesAll(house.configs, configs) &&
+          matchesAll(house.terms, terms) &&
+          matchesAll(house.features, features) &&
+          matchesAll(house.leases, leases) &&
+          matchesAll(house.life, life) &&
+          matchesAll(house.trust, trust) &&
+          house.commute <= commuteLimit &&
+          searchTokens.every(token => searchable.includes(token))
+        );
+      });
+
+      const sortValue = sortSelect.value;
+      if(sortValue === '最新发布') matched.sort((a,b) => a.newness - b.newness);
+      else if(sortValue === '租金从低到高') matched.sort((a,b) => a.price - b.price);
+      else if(sortValue === '租金从高到低') matched.sort((a,b) => b.price - a.price);
+      else if(sortValue === '距离从近到远' || sortValue === '通勤时间从短到长') matched.sort((a,b) => a.commute - b.commute);
+      else if(sortValue === '房源可信度从高到低') matched.sort((a,b) => b.credibility - a.credibility);
+      else if(sortValue === '匹配度从高到低') matched.sort((a,b) => b.credibility - a.credibility);
+      else matched.sort((a,b) => (b.credibility + Math.max(0,40-b.commute)) - (a.credibility + Math.max(0,40-a.commute)));
+
+      return matched;
+    }
+
+    function renderSampleHouses(matched){
+      sampleHouseCount.textContent = matched.length;
+      if(!matched.length){
+        sampleHouseGrid.innerHTML = '<div class="sample-house-empty">没有示例房源同时满足当前条件。可点击“清空条件”回到“全部”，或放宽部分筛选条件。</div>';
+        return;
+      }
+
+      sampleHouseGrid.innerHTML = matched.map(house => {
+        const primaryLayout = house.layouts[0] || (house.rental.includes('主卧') ? '主卧' : house.rental.includes('次卧') ? '次卧' : '单间');
+        const displayTags = [
+          house.rental.includes('整租') ? '整租' : '合租',
+          house.decoration[0],
+          house.features.includes('近地铁') ? '近地铁' : '',
+          house.leases.includes('押一付一') ? '押一付一' : '',
+          house.life.includes('允许养宠物') ? '宠物友好' : '',
+          house.features.includes('随时看房') ? '随时看房' : ''
+        ].filter(Boolean).slice(0,5);
+        const photoReady = house.hasPhoto === true;
+        const source = house.trust.includes('个人房东直租')
+          ? '个人房东直租'
+          : house.trust.includes('品牌公寓')
+            ? house.brand
+            : '平台经纪房源';
+
+        return `
+          <article class="sample-house-card" data-house-id="${house.id}" role="button" tabindex="0" aria-label="查看${house.name}详情">
+            <div class="sample-house-cover ${photoReady ? 'photo-ready' : 'photo-pending'}">
+              <span class="sample-house-number">房源 ${String(house.id).padStart(2,'0')}</span>
+              <span class="sample-house-photo-text">${photoReady ? '示例图片' : '图片拍摄中'}</span>
+              <span class="sample-house-match">可信度 ${house.credibility}%</span>
+            </div>
+
+            <div class="sample-house-body">
+              <div class="sample-house-name">${house.name} · ${house.area}${house.rental.includes('整租') ? '整租' : '合租'}${primaryLayout}</div>
+              <div class="sample-house-meta">
+                ${house.area} · ${house.subways.join('/') || '暂无地铁'} · 通勤约${house.commute}分钟
+                <br>${house.size}㎡ · ${house.orientation.join('/')} · ${primaryLayout} · ${house.floor} · ${house.elevator}
+              </div>
+              <div class="sample-house-tags">
+                ${displayTags.map(tag => `<span class="sample-house-tag">${tag}</span>`).join('')}
+              </div>
+              <div class="sample-house-submeta">${source} · ${house.newness === 1 ? '今天更新' : house.newness + '天前更新'}</div>
+            </div>
+
+            <div class="sample-house-price-wrap">
+              <div class="sample-house-price">${house.price}<small> 元/月</small></div>
+              <div class="sample-house-source">${house.brand}</div>
+            </div>
+          </article>
+        `;
+      }).join('');
+    }
+
+    function resetFilterToAll(){
+      inputs.forEach(input => {
+        input.checked = Boolean(input.dataset.all);
+      });
+      keyword.value = '';
+      landmarkInput.value = '';
+      minRent.value = '';
+      maxRent.value = '';
+      roommateGroup.classList.add('collapsed');
+      updateSummary();
+    }
+
+
+    function updateSummary(){
+      const selected = selectedValues();
+      selectedList.innerHTML = '';
+      if(!selected.length){
+        selectedList.innerHTML = '<span class="empty">当前为全部条件</span>';
+      }else{
+        selected.forEach(item=>{
+          const tag=document.createElement('span');
+          tag.className='selected-tag';
+          tag.innerHTML=`${item.text}<button data-remove="${item.id}">×</button>`;
+          selectedList.appendChild(tag);
+        });
+      }
+
+      const matched = getMatchedSampleHouses();
+      resultCount.textContent = matched.length;
+      renderSampleHouses(matched);
+
+      const restrictive = inputs.filter(i=>i.checked && !i.dataset.all).length +
+        (keyword.value.trim()?1:0) + (landmarkInput.value.trim()?1:0) +
+        (minRent.value || maxRent.value ? 1 : 0);
+
+      if(matched.length === 0){
+        hintArea.innerHTML='<div class="hint-box">当前条件没有匹配的示例房源。建议放宽区域、租金、通勤或房屋配置。</div>';
+      }else if(matched.length <= 2){
+        hintArea.innerHTML='<div class="hint-box">当前筛选条件较严格，只剩少量示例房源。</div>';
+      }else if(restrictive >= 5){
+        hintArea.innerHTML='<div class="ok-box">筛选范围较精准，可以直接比较当前示例房源。</div>';
+      }else{
+        hintArea.innerHTML='<div class="ok-box">当前为较宽泛的筛选范围，可继续增加条件缩小结果。</div>';
+      }
+
+      const isShared = ['m2','m3','m4','m5'].some(id => {
+        const item = document.getElementById(id);
+        return item && item.checked;
+      });
+      roommateGroup.classList.toggle('collapsed', !isShared);
+    }
+
+    inputs.forEach(i=>i.addEventListener('change', ()=>{
+      const group = i.closest('.option-grid');
+      if(group){
+        const groupInputs = [...group.querySelectorAll('input')];
+        const allInput = groupInputs.find(x=>x.dataset.all);
+        const normalInputs = groupInputs.filter(x=>!x.dataset.all);
+        if(i.dataset.all && i.checked){
+          normalInputs.forEach(x=>x.checked=false);
+        }else if(!i.dataset.all){
+          if(i.checked && allInput) allInput.checked=false;
+          if(!normalInputs.some(x=>x.checked) && allInput) allInput.checked=true;
+        }
+      }
+      updateSummary();
+    }));
+    [keyword,landmarkInput,minRent,maxRent].forEach(i=>i.addEventListener('input', updateSummary));
+
+    document.getElementById('selectedList').addEventListener('click', e=>{
+      const id=e.target.dataset.remove;
+      if(!id) return;
+      if(id==='keyword') keyword.value='';
+      else if(id==='landmark') landmarkInput.value='';
+      else if(id==='customRent'){minRent.value='';maxRent.value='';}
+      else{
+        const input=document.getElementById(id);
+        if(input){
+          input.checked=false;
+          const group=input.closest('.option-grid');
+          if(group){
+            const normalInputs=[...group.querySelectorAll('input')].filter(x=>!x.dataset.all);
+            const allInput=[...group.querySelectorAll('input')].find(x=>x.dataset.all);
+            if(allInput && !normalInputs.some(x=>x.checked)) allInput.checked=true;
+          }
+        }
+      }
+      updateSummary();
+    });
+
+    document.getElementById('locationTabs').addEventListener('click',e=>{
+      if(!e.target.matches('.tab')) return;
+      [...e.currentTarget.children].forEach(t=>t.classList.remove('active'));
+      e.target.classList.add('active');
+      document.querySelectorAll('.location-content').forEach(c=>c.classList.remove('active'));
+      document.getElementById(e.target.dataset.target).classList.add('active');
+    });
+
+    document.getElementById('rentModeTabs').addEventListener('click',e=>{
+      if(!e.target.matches('.tab')) return;
+      [...e.currentTarget.children].forEach(t=>t.classList.remove('active'));
+      e.target.classList.add('active');
+    });
+
+    document.getElementById('moreBtn').addEventListener('click',()=>{
+      const advanced=document.getElementById('advanced');
+      const opened=!advanced.classList.contains('collapsed');
+      advanced.classList.toggle('collapsed');
+      document.getElementById('moreBtn').textContent=opened?'展开更多筛选':'收起更多筛选';
+    });
+
+    document.getElementById('clearBtn').addEventListener('click', resetFilterToAll);
+
+    document.getElementById('searchBtn').addEventListener('click',updateSummary);
+    sortSelect.addEventListener('change', updateSummary);
+    document.getElementById('aiSearchBtn').addEventListener('click',()=>{
+      updateSummary();
+      hintArea.innerHTML='<div class="ok-box"><strong>AI搜索已启动：</strong>系统将结合当前筛选条件，并进一步理解你的通勤、预算和生活偏好。</div>';
+      const btn=document.getElementById('aiSearchBtn');
+      const old=btn.textContent;
+      btn.textContent='AI分析中…';
+      setTimeout(()=>btn.textContent=old,1000);
+    });
+    document.getElementById('applyBtn').addEventListener('click',()=>{
+      updateSummary();
+      const btn=document.getElementById('applyBtn');
+      const old=btn.textContent;
+      btn.textContent='已应用';
+      setTimeout(()=>btn.textContent=old,900);
+    });
+
+    document.querySelectorAll('.switch').forEach(sw=>{
+      sw.addEventListener('click',()=>sw.classList.toggle('on'));
+    });
+
+    updateSummary();
+  </script>
+
+  
+  <script id="house-detail-script">
+    (() => {
+      const detailModule = document.getElementById('houseDetailModule');
+      const detailContent = document.getElementById('houseDetailContent');
+      const filterModuleEl = document.getElementById('filterModule');
+      const aiModuleEl = document.getElementById('aiModule');
+      const detailToast = document.getElementById('detailToast');
+      let previousMode = 'filter';
+      let currentDetailHouseId = null;
+      let toastTimer = null;
+
+      const facilityIcons = {
+        '独立卫生间':'🚿',
+        '有阳台':'▣',
+        '可做饭':'🍳',
+        '家具齐全':'▤',
+        '配备空调':'❄',
+        '采光良好':'☀',
+        '网络稳定':'⌁',
+        '有停车位':'P',
+        '支持电动车充电':'⚡',
+        '配备书桌':'▱',
+        '环境安静':'◌',
+        '允许养宠物':'♧'
+      };
+
+      function showDetailToast(message){
+        detailToast.textContent = message;
+        detailToast.classList.add('show');
+        clearTimeout(toastTimer);
+        toastTimer = setTimeout(() => detailToast.classList.remove('show'), 1800);
+      }
+
+      function getHouseById(id){
+        return (window.__sampleHouses || []).find(house => Number(house.id) === Number(id));
+      }
+
+      function getCurrentSelectedLabels(){
+        const labels = [];
+        document.querySelectorAll('#filterModule .option-grid input:checked').forEach(input => {
+          if(!input.dataset.all){
+            const label = document.querySelector(`label[for="${input.id}"]`);
+            if(label) labels.push(label.textContent.trim());
+          }
+        });
+        return labels;
+      }
+
+      function calculateDetailScore(house){
+        const selected = getCurrentSelectedLabels();
+        const houseValues = [
+          house.area, ...house.subways, ...house.rental, ...house.roommate,
+          ...house.layouts, house.brand, ...house.orientation, ...house.decoration,
+          house.floor, house.elevator, ...house.configs, ...house.terms,
+          ...house.features, ...house.leases, ...house.life, ...house.trust
+        ];
+        const matched = selected.filter(item => houseValues.includes(item));
+        const missed = selected.filter(item => !houseValues.includes(item));
+        let score = Math.round(house.credibility * .62 + Math.max(0, 100 - house.commute) * .25);
+        score += Math.min(12, matched.length * 2);
+        score -= Math.min(10, missed.length * 2);
+        score = Math.max(58, Math.min(98, score));
+        return {score,matched,missed};
+      }
+
+      function getRisks(house){
+        const risks = [];
+        if(house.elevator === '无电梯' && house.floor === '高楼层') risks.push('高楼层且无电梯，搬运和日常上下楼成本较高');
+        if(house.orientation.includes('北')) risks.push('朝北房间需现场确认冬季采光与潮湿情况');
+        if(house.commute > 60) risks.push('模拟通勤时间较长，不适合通勤优先用户');
+        if(!house.subways.length) risks.push('附近暂无地铁信息，需要重点核查公交和接驳条件');
+        if(house.credibility < 88) risks.push('当前核验信息相对有限，签约前应进一步核实产权与费用');
+        if(!house.leases.includes('无服务费')) risks.push('可能存在服务费，需在签约前确认收费周期和退费条件');
+        if(!risks.length) risks.push('暂无明显结构性风险，仍建议现场检查隔音、水压、采光和设备状态');
+        return risks;
+      }
+
+      function feeData(house){
+        const service = house.leases.includes('无服务费') ? 0 : Math.round(house.price * .08);
+        const intermediary = house.leases.includes('无中介费') ? 0 : Math.round(house.price * .5);
+        const deposit = house.leases.includes('押一付一') ? house.price : house.price * 2;
+        const utilities = 220;
+        const monthlyTotal = house.price + service + utilities + Math.round(intermediary / 12);
+        return {service,intermediary,deposit,utilities,monthlyTotal};
+      }
+
+      function galleryTemplate(house){
+        const labels = ['客厅','卧室','厨房','卫生间','阳台'];
+        const stateClass = house.hasPhoto ? 'photo-ready' : 'photo-pending';
+        const stateText = house.hasPhoto ? '示例图片' : '图片拍摄中';
+        return `
+          <div class="detail-main-photo ${stateClass}" id="detailMainPhoto">
+            <span class="detail-photo-badge">${stateText} · ${labels[0]}</span>
+            <span id="detailMainPhotoText">${stateText}</span>
+            <span class="detail-photo-count">${house.hasPhoto ? '1 / 5' : '等待上传'}</span>
+          </div>
+          <div class="detail-thumbnails">
+            ${labels.map((label,index) => `
+              <button class="detail-thumb ${stateClass} ${index === 0 ? 'active' : ''}"
+                type="button" data-gallery-label="${label}" data-photo-state="${stateText}">
+                ${label}
+              </button>
+            `).join('')}
+          </div>
+        `;
+      }
+
+      function keyTags(house){
+        const tags = [
+          house.rental.includes('整租') ? '整租' : '合租',
+          house.features.includes('近地铁') ? '近地铁' : '',
+          house.decoration[0],
+          house.leases.includes('押一付一') ? '押一付一' : '',
+          house.features.includes('随时看房') ? '随时看房' : '',
+          house.trust.includes('官方核验房源') ? '官方核验' : '',
+          house.life.includes('允许养宠物') ? '宠物友好' : ''
+        ].filter(Boolean);
+        return tags.slice(0,7);
+      }
+
+      function facilityTemplate(house){
+        const items = [...new Set([
+          ...house.configs,
+          ...house.life.filter(item => facilityIcons[item])
+        ])].slice(0,12);
+        return items.map(item => `
+          <div class="detail-facility">
+            <div class="detail-facility-icon">${facilityIcons[item] || '✓'}</div>
+            <div>${item}</div>
+          </div>
+        `).join('');
+      }
+
+      function similarTemplate(house){
+        const all = window.__sampleHouses || [];
+        const similar = all
+          .filter(item => item.id !== house.id)
+          .map(item => ({
+            ...item,
+            similarity:
+              (item.area === house.area ? 3 : 0) +
+              (Math.abs(item.price - house.price) <= 1200 ? 2 : 0) +
+              (item.rental.some(value => house.rental.includes(value)) ? 1 : 0)
+          }))
+          .sort((a,b) => b.similarity - a.similarity)
+          .slice(0,4);
+
+        return similar.map(item => `
+          <article class="detail-similar-card" data-detail-house-id="${item.id}" tabindex="0" role="button">
+            <div class="detail-similar-cover ${item.hasPhoto ? 'photo-ready' : 'photo-pending'}">
+              ${item.hasPhoto ? '示例图片' : '图片拍摄中'}
+            </div>
+            <div class="detail-similar-body">
+              <div class="detail-similar-name">${item.name}</div>
+              <div class="detail-similar-meta">${item.area} · ${item.size}㎡ · ${item.commute}分钟通勤</div>
+              <div class="detail-similar-price">${item.price}元/月</div>
+            </div>
+          </article>
+        `).join('');
+      }
+
+      function renderDetailPage(house){
+        const fees = feeData(house);
+        const scoreResult = calculateDetailScore(house);
+        const risks = getRisks(house);
+        const layout = house.layouts[0] || (house.rental.includes('主卧') ? '主卧' : house.rental.includes('次卧') ? '次卧' : '单间');
+        const titleMode = house.rental.includes('整租') ? '整租' : '合租';
+        const selectedText = scoreResult.matched.length
+          ? `符合当前筛选中的${scoreResult.matched.slice(0,4).join('、')}等条件。`
+          : `该房源在通勤、可信度和基础配置方面表现较为均衡。`;
+        const positive = [
+          house.features.includes('近地铁') ? '距离轨道交通较方便' : '',
+          house.configs.includes('独立卫生间') ? '带独立卫生间，居住私密性较好' : '',
+          house.life.includes('环境安静') ? '适合备考或居家办公人群' : '',
+          house.life.includes('允许养宠物') ? '支持宠物友好居住需求' : '',
+          house.leases.includes('无中介费') ? '无中介费，可降低初次签约成本' : '',
+          house.configs.includes('采光良好') ? '采光条件较好' : ''
+        ].filter(Boolean);
+        if(!positive.length) positive.push('基础租住信息完整，可作为同价位比较样本');
+
+        detailContent.innerHTML = `
+          <div class="detail-back-row">
+            <button class="detail-back-btn" type="button" id="detailBackBtn">← 返回房源列表</button>
+            <div class="detail-breadcrumb">上海租房 / ${house.area} / ${house.name}</div>
+          </div>
+
+          <section class="detail-title-block">
+            <h1 class="detail-title">${titleMode} · ${house.name} ${layout} ${house.orientation.join('/')}</h1>
+            <div class="detail-title-meta">
+              <span>房源维护时间：${house.newness === 1 ? '今天' : house.newness + '天前'}</span>
+              <span class="detail-verified">✓ 可信度 ${house.credibility}%</span>
+              <span>示例房源编号：DEMO-${String(house.id).padStart(4,'0')}</span>
+              <span>本页面为产品功能演示，不构成真实租赁要约</span>
+            </div>
+          </section>
+
+          <section class="detail-hero">
+            <div class="detail-gallery">${galleryTemplate(house)}</div>
+
+            <aside class="detail-summary-card">
+              <div class="detail-summary-top">
+                <div class="detail-price">${house.price}<small> 元/月</small></div>
+                <div class="detail-icon-actions">
+                  <button class="detail-icon-btn" type="button" data-detail-action="favorite" title="收藏">♡</button>
+                  <button class="detail-icon-btn" type="button" data-detail-action="share" title="分享">↗</button>
+                </div>
+              </div>
+
+              <div class="detail-tags">
+                ${keyTags(house).map(tag => `<span class="detail-tag">${tag}</span>`).join('')}
+              </div>
+
+              <div class="detail-key-metrics">
+                <div class="detail-metric">
+                  <strong>${titleMode}</strong><span>租赁方式</span>
+                </div>
+                <div class="detail-metric">
+                  <strong>${layout} · ${house.size}㎡</strong><span>户型面积</span>
+                </div>
+                <div class="detail-metric">
+                  <strong>${house.orientation.join('/')} · ${house.floor}</strong><span>朝向楼层</span>
+                </div>
+              </div>
+
+              <div class="detail-cost-card">
+                <div class="detail-cost-title">
+                  <span>月度综合成本估算</span>
+                  <strong>约 ${fees.monthlyTotal} 元</strong>
+                </div>
+                <div class="detail-cost-note">
+                  包含租金、估算服务费、水电网费及一次性中介费的月均摊销，仅用于产品演示。
+                </div>
+              </div>
+
+              <div class="detail-ai-brief">
+                <div class="detail-ai-brief-title">AI一句话总结 · 匹配度 ${scoreResult.score}%</div>
+                <div class="detail-ai-brief-text">${selectedText}主要需要关注：${risks[0]}。</div>
+              </div>
+
+              <div class="detail-contact-actions">
+                <button class="detail-contact-btn primary" type="button" data-detail-action="contact">在线咨询</button>
+                <button class="detail-contact-btn secondary" type="button" data-detail-action="appointment">预约看房</button>
+              </div>
+            </aside>
+          </section>
+
+          <nav class="detail-anchor-nav">
+            <button class="detail-anchor-btn active" type="button" data-detail-target="detailOverview">房屋信息</button>
+            <button class="detail-anchor-btn" type="button" data-detail-target="detailAiDecision">AI决策</button>
+            <button class="detail-anchor-btn" type="button" data-detail-target="detailFees">费用详情</button>
+            <button class="detail-anchor-btn" type="button" data-detail-target="detailDescription">房源描述</button>
+            <button class="detail-anchor-btn" type="button" data-detail-target="detailLocation">位置周边</button>
+            <button class="detail-anchor-btn" type="button" data-detail-target="detailSimilar">相似房源</button>
+          </nav>
+
+          <div class="detail-layout">
+            <div class="detail-main">
+              <section class="detail-section" id="detailOverview">
+                <div class="detail-section-head">
+                  <div>
+                    <div class="detail-section-title">房屋信息</div>
+                    <div class="detail-section-subtitle">整合链家/贝壳的信息完整度与58同城的配置展示方式</div>
+                  </div>
+                </div>
+
+                <div class="detail-info-grid">
+                  <div class="detail-info-item"><span>租赁方式</span><strong>${titleMode}</strong></div>
+                  <div class="detail-info-item"><span>户型</span><strong>${layout}</strong></div>
+                  <div class="detail-info-item"><span>建筑面积</span><strong>${house.size}㎡</strong></div>
+                  <div class="detail-info-item"><span>朝向</span><strong>${house.orientation.join('/')}</strong></div>
+                  <div class="detail-info-item"><span>楼层</span><strong>${house.floor}</strong></div>
+                  <div class="detail-info-item"><span>电梯</span><strong>${house.elevator}</strong></div>
+                  <div class="detail-info-item"><span>装修</span><strong>${house.decoration.join('、')}</strong></div>
+                  <div class="detail-info-item"><span>租期</span><strong>${house.terms.join('、')}</strong></div>
+                  <div class="detail-info-item"><span>所在区域</span><strong>${house.area}</strong></div>
+                  <div class="detail-info-item"><span>地铁</span><strong>${house.subways.join('、') || '暂无地铁信息'}</strong></div>
+                  <div class="detail-info-item"><span>模拟通勤</span><strong>约 ${house.commute} 分钟</strong></div>
+                  <div class="detail-info-item"><span>房源来源</span><strong>${house.brand}</strong></div>
+                </div>
+
+                <div class="detail-facility-grid">${facilityTemplate(house)}</div>
+              </section>
+
+              <section class="detail-section" id="detailAiDecision">
+                <div class="detail-section-head">
+                  <div>
+                    <div class="detail-section-title">AI租房决策分析</div>
+                    <div class="detail-section-subtitle">不仅展示房源优点，也明确呈现不满足条件和潜在取舍</div>
+                  </div>
+                </div>
+
+                <div class="detail-ai-score-grid">
+                  <div class="detail-score-ring" style="--score:${scoreResult.score}">
+                    <div class="detail-score-value">${scoreResult.score}<small>综合匹配度</small></div>
+                  </div>
+
+                  <div class="detail-decision-list">
+                    ${positive.slice(0,4).map(item => `
+                      <div class="detail-decision-item good">
+                        <span class="detail-decision-icon">✓</span>
+                        <strong>匹配优势</strong>
+                        <span>${item}</span>
+                      </div>
+                    `).join('')}
+                    ${risks.slice(0,3).map(item => `
+                      <div class="detail-decision-item warn">
+                        <span class="detail-decision-icon">!</span>
+                        <strong>注意事项</strong>
+                        <span>${item}</span>
+                      </div>
+                    `).join('')}
+                    ${scoreResult.missed.length ? `
+                      <div class="detail-decision-item warn">
+                        <span class="detail-decision-icon">!</span>
+                        <strong>未满足筛选</strong>
+                        <span>${scoreResult.missed.slice(0,4).join('、')}</span>
+                      </div>` : ''}
+                  </div>
+                </div>
+              </section>
+
+              <section class="detail-section" id="detailFees">
+                <div class="detail-section-head">
+                  <div>
+                    <div class="detail-section-title">费用详情</div>
+                    <div class="detail-section-subtitle">解决竞品只突出月租、综合成本不够直观的问题</div>
+                  </div>
+                </div>
+
+                <table class="detail-fee-table">
+                  <thead>
+                    <tr><th>费用项目</th><th>金额</th><th>收费频率</th><th>说明</th></tr>
+                  </thead>
+                  <tbody>
+                    <tr><td>房屋租金</td><td class="detail-fee-highlight">${house.price}元</td><td>每月</td><td>页面标注租金</td></tr>
+                    <tr><td>押金</td><td>${fees.deposit}元</td><td>签约时</td><td>${house.leases.includes('押一付一') ? '按押一付一估算' : '按两个月租金估算'}</td></tr>
+                    <tr><td>服务费</td><td>${fees.service}元</td><td>每月</td><td>${fees.service ? '按月租8%进行示例估算' : '当前条件标注无服务费'}</td></tr>
+                    <tr><td>中介费</td><td>${fees.intermediary}元</td><td>一次性</td><td>${fees.intermediary ? '按半个月租金进行示例估算' : '当前条件标注无中介费'}</td></tr>
+                    <tr><td>水电网费</td><td>${fees.utilities}元</td><td>每月估算</td><td>实际金额以账单和合同为准</td></tr>
+                  </tbody>
+                </table>
+
+                <div class="detail-fee-total">
+                  预计首次支付约 <strong>${house.price + fees.deposit + fees.service + fees.intermediary} 元</strong>；
+                  月度综合成本约 <strong>${fees.monthlyTotal} 元</strong>。所有费用为原型演示数据，签约前应逐项核实。
+                </div>
+              </section>
+
+              <section class="detail-section" id="detailDescription">
+                <div class="detail-section-head">
+                  <div>
+                    <div class="detail-section-title">房源描述与核验提醒</div>
+                    <div class="detail-section-subtitle">减少营销化文案，使用可核查、可比较的结构化信息</div>
+                  </div>
+                </div>
+
+                <div class="detail-description-grid">
+                  <div class="detail-description-box">
+                    <h4>房源描述</h4>
+                    <p>
+                      该示例房源位于${house.area}，为${titleMode}${layout}，面积约${house.size}㎡，
+                      ${house.orientation.join('/')}朝向，位于${house.floor}，${house.elevator}。
+                      房屋配置包括${house.configs.slice(0,5).join('、')}，
+                      适合${house.life.includes('配备书桌') ? '备考或居家办公' : titleMode === '整租' ? '重视独立空间的租客' : '预算敏感型租客'}。
+                    </p>
+                  </div>
+
+                  <div class="detail-description-box">
+                    <h4>现场核验清单</h4>
+                    <ul>
+                      <li>核对房东身份、产权信息与出租授权</li>
+                      <li>确认押金、服务费、中介费及退费条件</li>
+                      <li>测试水压、热水器、空调、门锁和网络</li>
+                      <li>分别在白天和夜间检查采光、噪声与周边环境</li>
+                      <li>将口头承诺写入正式租赁合同</li>
+                    </ul>
+                  </div>
+                </div>
+              </section>
+
+              <section class="detail-section" id="detailLocation">
+                <div class="detail-section-head">
+                  <div>
+                    <div class="detail-section-title">位置与周边</div>
+                    <div class="detail-section-subtitle">地图为原型示意，不调用真实地图服务</div>
+                  </div>
+                </div>
+
+                <div class="detail-nearby-tabs">
+                  <button class="detail-nearby-tab active" type="button">地铁</button>
+                  <button class="detail-nearby-tab" type="button">公交</button>
+                  <button class="detail-nearby-tab" type="button">学校</button>
+                  <button class="detail-nearby-tab" type="button">医院</button>
+                  <button class="detail-nearby-tab" type="button">餐饮</button>
+                  <button class="detail-nearby-tab" type="button">购物</button>
+                </div>
+
+                <div class="detail-map">
+                  <div class="detail-map-road"></div>
+                  <div class="detail-map-marker">${house.name}</div>
+                  <div class="detail-map-poi" style="left:14%;top:20%">${house.subways[0] || '公交站'} · 约420m</div>
+                  <div class="detail-map-poi" style="right:12%;top:24%">便利店 · 约260m</div>
+                  <div class="detail-map-poi" style="left:20%;bottom:18%">社区医院 · 约850m</div>
+                  <div class="detail-map-poi" style="right:18%;bottom:15%">商业中心 · 约1.2km</div>
+                </div>
+
+                <div class="detail-nearby-list">
+                  <div class="detail-nearby-item"><strong>轨道交通</strong><br>${house.subways.join('、') || '暂无地铁'}，模拟步行约420米</div>
+                  <div class="detail-nearby-item"><strong>工作/学习通勤</strong><br>模拟单程通勤约${house.commute}分钟</div>
+                  <div class="detail-nearby-item"><strong>生活便利</strong><br>餐饮、便利店和社区服务设施较为齐全</div>
+                </div>
+              </section>
+
+              <section class="detail-section" id="detailSimilar">
+                <div class="detail-section-head">
+                  <div>
+                    <div class="detail-section-title">相似房源</div>
+                    <div class="detail-section-subtitle">优先推荐同区域、相近价格或相同租赁方式的示例房源</div>
+                  </div>
+                </div>
+                <div class="detail-similar-grid">${similarTemplate(house)}</div>
+              </section>
+            </div>
+
+            <aside class="detail-side-card">
+              <div class="detail-advisor">
+                <div class="detail-advisor-avatar">顾问</div>
+                <div>
+                  <strong>示例租房顾问</strong>
+                  <span>平均5分钟内响应 · 原型演示</span>
+                </div>
+              </div>
+
+              <div class="detail-advisor-score">
+                <div><strong>9.3</strong><span>服务评分</span></div>
+                <div><strong>96%</strong><span>回复率</span></div>
+                <div><strong>24</strong><span>在租房源</span></div>
+              </div>
+
+              <div class="detail-side-hint">
+                顾问模块借鉴58同城的服务评分，但弱化营销排名；咨询前可先查看费用、风险与AI匹配分析。
+              </div>
+
+              <div class="detail-side-actions">
+                <button class="detail-side-primary" type="button" data-detail-action="contact">在线咨询</button>
+                <button class="detail-side-secondary" type="button" data-detail-action="appointment">预约看房</button>
+              </div>
+
+              <div class="detail-trust-list">
+                <div class="detail-trust-item"><span class="detail-trust-dot">✓</span>房源基础信息已结构化展示</div>
+                <div class="detail-trust-item"><span class="detail-trust-dot">✓</span>费用项目提供示例拆分</div>
+                <div class="detail-trust-item"><span class="detail-trust-dot">✓</span>同时展示优势与潜在风险</div>
+                <div class="detail-trust-item"><span class="detail-trust-dot">✓</span>支持收藏、咨询与预约看房</div>
+              </div>
+            </aside>
+          </div>
+        `;
+
+        currentDetailHouseId = house.id;
+        window.scrollTo({top:0,behavior:'smooth'});
+      }
+
+      function openHouseDetail(id){
+        const house = getHouseById(id);
+        if(!house) return;
+        previousMode = aiModuleEl && !aiModuleEl.classList.contains('is-hidden') ? 'ai' : 'filter';
+        filterModuleEl.classList.add('is-hidden');
+        if(aiModuleEl) aiModuleEl.classList.add('is-hidden');
+        detailModule.classList.remove('is-hidden');
+        document.body.classList.add('detail-active');
+        renderDetailPage(house);
+      }
+
+      function closeHouseDetail(){
+        detailModule.classList.add('is-hidden');
+        document.body.classList.remove('detail-active');
+
+        if(previousMode === 'ai' && aiModuleEl){
+          aiModuleEl.classList.remove('is-hidden');
+          filterModuleEl.classList.add('is-hidden');
+          document.getElementById('aiModeBtn')?.classList.add('active');
+          document.getElementById('filterModeBtn')?.classList.remove('active');
+        }else{
+          filterModuleEl.classList.remove('is-hidden');
+          if(aiModuleEl) aiModuleEl.classList.add('is-hidden');
+          document.getElementById('filterModeBtn')?.classList.add('active');
+          document.getElementById('aiModeBtn')?.classList.remove('active');
+        }
+        window.scrollTo({top:0,behavior:'smooth'});
+      }
+
+      document.getElementById('sampleHouseGrid').addEventListener('click', event => {
+        const card = event.target.closest('.sample-house-card');
+        if(card) openHouseDetail(card.dataset.houseId);
+      });
+      document.getElementById('sampleHouseGrid').addEventListener('keydown', event => {
+        if(event.key === 'Enter' || event.key === ' '){
+          const card = event.target.closest('.sample-house-card');
+          if(card){
+            event.preventDefault();
+            openHouseDetail(card.dataset.houseId);
+          }
+        }
+      });
+
+      detailContent.addEventListener('click', event => {
+        if(event.target.closest('#detailBackBtn')){
+          closeHouseDetail();
+          return;
+        }
+
+        const similarCard = event.target.closest('[data-detail-house-id]');
+        if(similarCard){
+          const house = getHouseById(similarCard.dataset.detailHouseId);
+          if(house) renderDetailPage(house);
+          return;
+        }
+
+        const anchor = event.target.closest('[data-detail-target]');
+        if(anchor){
+          const target = document.getElementById(anchor.dataset.detailTarget);
+          if(target) target.scrollIntoView({behavior:'smooth',block:'start'});
+          document.querySelectorAll('.detail-anchor-btn').forEach(btn => btn.classList.toggle('active', btn === anchor));
+          return;
+        }
+
+        const thumb = event.target.closest('.detail-thumb');
+        if(thumb){
+          document.querySelectorAll('.detail-thumb').forEach(item => item.classList.toggle('active', item === thumb));
+          const main = document.getElementById('detailMainPhoto');
+          const textNode = document.getElementById('detailMainPhotoText');
+          if(main && textNode){
+            textNode.textContent = thumb.dataset.photoState;
+            const badge = main.querySelector('.detail-photo-badge');
+            if(badge) badge.textContent = `${thumb.dataset.photoState} · ${thumb.dataset.galleryLabel}`;
+          }
+          return;
+        }
+
+        const nearbyTab = event.target.closest('.detail-nearby-tab');
+        if(nearbyTab){
+          document.querySelectorAll('.detail-nearby-tab').forEach(item => item.classList.toggle('active', item === nearbyTab));
+          showDetailToast(`已切换至“${nearbyTab.textContent.trim()}”周边信息示意`);
+          return;
+        }
+
+        const action = event.target.closest('[data-detail-action]');
+        if(action){
+          const type = action.dataset.detailAction;
+          if(type === 'favorite'){
+            action.classList.toggle('active');
+            action.textContent = action.classList.contains('active') ? '♥' : '♡';
+            showDetailToast(action.classList.contains('active') ? '已收藏该示例房源' : '已取消收藏');
+          }else if(type === 'share'){
+            showDetailToast('已生成示例分享链接');
+          }else if(type === 'contact'){
+            showDetailToast('在线咨询功能为原型演示，未连接真实顾问');
+          }else if(type === 'appointment'){
+            showDetailToast('预约看房已记录为原型交互');
+          }
+        }
+      });
+
+      window.openHouseDetail = openHouseDetail;
+    })();
+  </script>
+
+
+  <script id="ai-module-script">
+    (() => {
+      const filterModule = document.getElementById('filterModule');
+      const aiModule = document.getElementById('aiModule');
+      const filterModeBtn = document.getElementById('filterModeBtn');
+      const aiModeBtn = document.getElementById('aiModeBtn');
+      const aiNeedInput = document.getElementById('aiNeedInput');
+      const aiChat = document.getElementById('aiChat');
+      const followupPanel = document.getElementById('followupPanel');
+      const recommendSection = document.getElementById('recommendSection');
+      const recommendList = document.getElementById('recommendList');
+      const compareSection = document.getElementById('aiCompareSection');
+      const compareDock = document.getElementById('compareDock');
+
+      const aiDestination = document.getElementById('aiDestination');
+      const aiBudget = document.getElementById('aiBudget');
+      const aiCommute = document.getElementById('aiCommute');
+      const aiRentalType = document.getElementById('aiRentalType');
+      const aiLeaseTerm = document.getElementById('aiLeaseTerm');
+      const aiPriority = document.getElementById('aiPriority');
+      const preferenceInputs = [...document.querySelectorAll('#aiPreferences input')];
+
+      let currentScenario = '';
+      let comparedHouses = [];
+
+      function switchMode(mode){
+        const ai = mode === 'ai';
+        filterModule.classList.toggle('is-hidden', ai);
+        aiModule.classList.toggle('is-hidden', !ai);
+        filterModeBtn.classList.toggle('active', !ai);
+        aiModeBtn.classList.toggle('active', ai);
+        window.scrollTo({top:0, behavior:'smooth'});
+      }
+
+      filterModeBtn.addEventListener('click', () => switchMode('filter'));
+      aiModeBtn.addEventListener('click', () => switchMode('ai'));
+      document.getElementById('backToFilterBtn').addEventListener('click', () => {
+        switchMode('filter');
+      });
+
+
+      function appendMessage(role, content){
+        const row = document.createElement('div');
+        row.className = `chat-message ${role}`;
+        const avatar = document.createElement('div');
+        avatar.className = 'chat-avatar';
+        avatar.textContent = role === 'user' ? '我' : 'AI';
+        const bubble = document.createElement('div');
+        bubble.className = 'chat-bubble';
+        bubble.textContent = content;
+        row.appendChild(avatar);
+        row.appendChild(bubble);
+        aiChat.appendChild(row);
+        aiChat.scrollTop = aiChat.scrollHeight;
+      }
+
+      function setPreference(value, checked=true){
+        const target = preferenceInputs.find(input => input.value === value);
+        if(target) target.checked = checked;
+      }
+
+      function clearPreferences(){
+        preferenceInputs.forEach(input => input.checked = false);
+      }
+
+      function inferScenario(text){
+        if(/考研|备考|自习|学习/.test(text)) return '考研备考';
+        if(/毕业|应届|实习/.test(text)) return '应届毕业生';
+        if(/异地|刚来上海|外地/.test(text)) return '异地就业';
+        if(/宠物|养猫|养狗|猫|狗/.test(text)) return '宠物友好';
+        if(/通勤优先|离公司近|通勤短/.test(text)) return '通勤优先';
+        if(/预算低|便宜|省钱|低预算/.test(text)) return '低预算';
+        return currentScenario || '综合找房';
+      }
+
+      function parseNeed(text){
+        const result = {
+          scenario: inferScenario(text),
+          destination: '',
+          budget: '',
+          commute: '',
+          rental: '',
+          lease: '',
+          preferences: []
+        };
+
+        const budgetMatch = text.match(/(\d{3,5})\s*元?/);
+        if(budgetMatch) result.budget = budgetMatch[1];
+
+        const commuteMatch = text.match(/(\d{2,3})\s*分钟/);
+        if(commuteMatch) result.commute = commuteMatch[1];
+
+        if(/整租/.test(text) && /合租/.test(text)) result.rental = '均可';
+        else if(/整租/.test(text)) result.rental = '整租';
+        else if(/合租|单间|主卧|次卧/.test(text)) result.rental = '合租';
+
+        if(/年租|一年/.test(text)) result.lease = '年租';
+        else if(/半年/.test(text)) result.lease = '半年租';
+        else if(/1.?3个月|一到三个月/.test(text)) result.lease = '1—3个月';
+        else if(/4.?6个月|四到六个月/.test(text)) result.lease = '4—6个月';
+        else if(/月租|短租/.test(text)) result.lease = '月租';
+
+        const locations = ['张江高科','同济大学','五角场','陆家嘴','人民广场','徐家汇','漕河泾','虹桥','静安寺','上海大学','复旦大学','交通大学'];
+        result.destination = locations.find(item => text.includes(item)) || '';
+
+        const prefRules = [
+          ['近地铁', /地铁|近地铁/],
+          ['环境安静', /安静|不吵|噪声小/],
+          ['允许养宠物', /宠物|养猫|养狗|猫|狗/],
+          ['配备书桌', /书桌|学习桌/],
+          ['采光良好', /采光|朝南|阳光/],
+          ['独立卫生间', /独立卫生间|独卫/],
+          ['押一付一', /押一付一/],
+          ['无中介费', /无中介费|不要中介费|免中介费/],
+          ['靠近自习室', /自习室|图书馆/]
+        ];
+        prefRules.forEach(([name, rule]) => {
+          if(rule.test(text)) result.preferences.push(name);
+        });
+
+        if(result.scenario === '考研备考'){
+          ['环境安静','配备书桌','靠近自习室'].forEach(item => {
+            if(!result.preferences.includes(item)) result.preferences.push(item);
+          });
+        }
+        if(result.scenario === '应届毕业生'){
+          ['近地铁','押一付一'].forEach(item => {
+            if(!result.preferences.includes(item)) result.preferences.push(item);
+          });
+        }
+        if(result.scenario === '宠物友好' && !result.preferences.includes('允许养宠物')){
+          result.preferences.push('允许养宠物');
+        }
+        return result;
+      }
+
+      function applyParsedResult(result){
+        currentScenario = result.scenario;
+        document.querySelectorAll('.scenario-btn').forEach(btn => {
+          btn.classList.toggle('active', btn.dataset.scenario === currentScenario);
+        });
+        aiDestination.value = result.destination || aiDestination.value;
+        aiBudget.value = result.budget || aiBudget.value;
+        if(['30','45','60','90'].includes(result.commute)) aiCommute.value = result.commute;
+        if(result.rental) aiRentalType.value = result.rental;
+        if(result.lease) aiLeaseTerm.value = result.lease;
+        clearPreferences();
+        result.preferences.forEach(item => setPreference(item));
+        followupPanel.classList.remove('is-hidden');
+        updateProfile();
+      }
+
+      function getPreferences(){
+        return preferenceInputs.filter(input => input.checked).map(input => input.value);
+      }
+
+      function updateProfile(){
+        const prefs = getPreferences();
+        const completed = [
+          !!currentScenario,
+          !!aiDestination.value.trim(),
+          !!aiBudget.value,
+          !!aiCommute.value,
+          !!aiRentalType.value,
+          !!aiLeaseTerm.value,
+          prefs.length > 0,
+          !!aiPriority.value
+        ].filter(Boolean).length;
+        const progress = Math.max(20, Math.round(completed / 8 * 100));
+
+        document.getElementById('profileProgressText').textContent = progress + '%';
+        document.getElementById('profileProgressBar').style.width = progress + '%';
+
+        const scenarioTags = document.getElementById('scenarioTags');
+        scenarioTags.innerHTML = currentScenario
+          ? `<span class="profile-tag">${currentScenario}</span>`
+          : '<span class="profile-empty">尚未选择</span>';
+
+        document.getElementById('profileDestination').textContent = aiDestination.value.trim() || '待补充';
+        document.getElementById('profileBudget').textContent = aiBudget.value ? `${aiBudget.value}元/月以内` : '待补充';
+        document.getElementById('profileCommute').textContent = aiCommute.value ? `${aiCommute.value}分钟以内` : '待补充';
+        document.getElementById('profileRental').textContent = aiRentalType.value || '待补充';
+        document.getElementById('profileLease').textContent = aiLeaseTerm.value || '待补充';
+        document.getElementById('profilePriority').textContent = aiPriority.value || '综合均衡';
+
+        const preferenceTags = document.getElementById('preferenceTags');
+        preferenceTags.innerHTML = prefs.length
+          ? prefs.map(pref => `<span class="profile-tag">${pref}</span>`).join('')
+          : '<span class="profile-empty">尚未识别</span>';
+
+        document.getElementById('profileStatus').textContent =
+          progress >= 85 ? '可以生成较准确推荐' :
+          progress >= 60 ? '还可补充少量信息' :
+          '建议继续完善需求';
+      }
+
+      document.getElementById('parseNeedBtn').addEventListener('click', () => {
+        const text = aiNeedInput.value.trim();
+        if(!text){
+          appendMessage('assistant','请先描述你的租房需求，或者点击下方示例。');
+          return;
+        }
+        appendMessage('user', text);
+        aiNeedInput.value = '';
+        const result = parseNeed(text);
+        applyParsedResult(result);
+
+        const missing = [];
+        if(!result.destination) missing.push('工作或学习地点');
+        if(!result.budget) missing.push('最高预算');
+        if(!result.commute) missing.push('可接受的通勤时间');
+        if(!result.rental) missing.push('整租或合租');
+
+        const identified = [
+          result.scenario,
+          result.destination,
+          result.budget ? `预算${result.budget}元以内` : '',
+          result.commute ? `通勤${result.commute}分钟以内` : '',
+          result.rental,
+          ...result.preferences
+        ].filter(Boolean).join('、');
+
+        appendMessage(
+          'assistant',
+          `我已识别：${identified || '部分生活偏好'}。` +
+          (missing.length ? `\n还需要确认：${missing.join('、')}。` : '\n信息较完整，可以确认后生成推荐。')
+        );
+      });
+
+      document.querySelectorAll('.scenario-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+          currentScenario = btn.dataset.scenario;
+          document.querySelectorAll('.scenario-btn').forEach(item => item.classList.toggle('active', item === btn));
+          const scenarioExamples = {
+            '应届毕业生':'刚毕业到上海工作，预算2000元左右，接受合租，最好押一付一、离地铁近。',
+            '考研备考':'我准备在同济大学附近考研，预算2500元以内，可以合租，希望安静、有书桌，通勤不超过30分钟。',
+            '异地就业':'我刚到上海工作，对区域不熟，预算3000元，希望通勤45分钟以内，生活方便。',
+            '通勤优先':'我最看重通勤，希望离工作地点地铁30分钟以内，预算可以适当放宽。',
+            '低预算':'我想尽量节省租房开支，预算1800元以内，可以合租，最好无中介费。',
+            '宠物友好':'我养了一只猫，希望找允许养宠物的房源，预算3500元以内，整租优先。'
+          };
+          aiNeedInput.value = scenarioExamples[currentScenario];
+          updateProfile();
+        });
+      });
+
+      document.querySelectorAll('.example-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+          aiNeedInput.value = btn.dataset.example;
+          aiNeedInput.focus();
+        });
+      });
+
+      [aiDestination, aiBudget, aiCommute, aiRentalType, aiLeaseTerm, aiPriority, ...preferenceInputs]
+        .forEach(control => control.addEventListener('input', updateProfile));
+
+      document.getElementById('addQuestionBtn').addEventListener('click', () => {
+        const questions = [];
+        if(!aiRentalType.value) questions.push('你更倾向整租还是合租？');
+        if(!aiLeaseTerm.value) questions.push('预计租住多长时间？');
+        if(!aiBudget.value) questions.push('每月最高可接受多少预算？');
+        if(!aiDestination.value.trim()) questions.push('主要工作或学习地点在哪里？');
+        if(getPreferences().length < 2) questions.push('你更重视安静、采光、近地铁还是独立卫浴？');
+        appendMessage('assistant', questions[0] || '你的基础需求已经比较完整。最后确认一下：预算、通勤和居住环境中，哪一项最不能妥协？');
+      });
+
+
+      function aiHouseTags(house){
+        return [...new Set([
+          ...house.features,
+          ...house.leases,
+          ...house.life,
+          ...house.configs,
+          ...house.trust
+        ])];
+      }
+
+      function aiHouseType(house){
+        const mode = house.rental.includes('整租') ? '整租' : '合租';
+        const room = house.layouts[0]
+          || (house.rental.includes('主卧') ? '主卧'
+          : house.rental.includes('次卧') ? '次卧' : '单间');
+        return `${mode}${room} · ${house.size}㎡ · ${house.floor} · ${house.elevator}`;
+      }
+
+      function destinationBonus(house, destination){
+        const value = (destination || '').trim();
+        if(!value) return 0;
+        const searchable = [
+          house.area, ...house.subways, ...house.keywords
+        ].join(' ');
+        if(searchable.includes(value)) return 18;
+
+        const areaMap = {
+          '张江高科':'浦东新区',
+          '同济大学':'杨浦区',
+          '五角场':'杨浦区',
+          '陆家嘴':'浦东新区',
+          '人民广场':'黄浦区',
+          '徐家汇':'徐汇区',
+          '漕河泾':'徐汇区',
+          '虹桥':'长宁区',
+          '静安寺':'静安区'
+        };
+        return areaMap[value] === house.area ? 10 : 0;
+      }
+
+      function scenarioBonus(house){
+        const tags = aiHouseTags(house);
+        let bonus = 0;
+
+        if(currentScenario === '考研备考'){
+          if(house.area === '杨浦区') bonus += 8;
+          ['环境安静','配备书桌','靠近自习室','靠近高校'].forEach(item => {
+            if(tags.includes(item)) bonus += 4;
+          });
+          if(house.rental.includes('合租')) bonus += 4;
+        }else if(currentScenario === '应届毕业生'){
+          if(house.price <= 2200) bonus += 8;
+          ['近地铁','押一付一','无中介费','无服务费'].forEach(item => {
+            if(tags.includes(item)) bonus += 4;
+          });
+          if(house.rental.includes('合租')) bonus += 5;
+        }else if(currentScenario === '异地就业'){
+          if(tags.includes('近地铁')) bonus += 5;
+          if(tags.includes('近期可入住')) bonus += 4;
+          if(tags.includes('可线上签约')) bonus += 3;
+        }else if(currentScenario === '通勤优先'){
+          bonus += Math.max(0, 12 - Math.round(house.commute / 5));
+          if(tags.includes('近地铁')) bonus += 5;
+        }else if(currentScenario === '低预算'){
+          if(house.price <= 2000) bonus += 10;
+          if(tags.includes('无中介费')) bonus += 4;
+          if(tags.includes('无服务费')) bonus += 4;
+        }else if(currentScenario === '宠物友好'){
+          if(tags.includes('允许养宠物')) bonus += 14;
+          if(house.rental.includes('整租')) bonus += 4;
+        }
+        return bonus;
+      }
+
+      function calculateScore(house){
+        let score = 58;
+        const budget = Number(aiBudget.value || 0);
+        const commute = Number(aiCommute.value || 0);
+        const prefs = getPreferences();
+        const tags = aiHouseTags(house);
+
+        if(budget){
+          if(house.price <= budget) score += 15;
+          else score -= Math.min(20, Math.round((house.price - budget) / 120));
+        }
+
+        if(commute){
+          if(house.commute <= commute) score += 10;
+          else score -= Math.min(14, Math.round((house.commute - commute) / 3));
+        }
+
+        if(aiRentalType.value && aiRentalType.value !== '均可'){
+          if(house.rental.includes(aiRentalType.value)) score += 9;
+          else score -= 8;
+        }
+
+        if(aiLeaseTerm.value){
+          if(house.terms.includes(aiLeaseTerm.value)) score += 6;
+          else score -= 3;
+        }
+
+        prefs.forEach(pref => {
+          if(tags.includes(pref)) score += 4;
+          else score -= 1;
+        });
+
+        score += destinationBonus(house, aiDestination.value);
+        score += scenarioBonus(house);
+
+        if(aiPriority.value === '预算优先' && budget && house.price <= budget) score += 5;
+        if(aiPriority.value === '通勤优先' && commute && house.commute <= commute) score += 5;
+        if(aiPriority.value === '居住环境优先' && tags.includes('环境安静')) score += 5;
+
+        score += Math.round((house.credibility - 80) / 4);
+        return Math.max(50, Math.min(98, score));
+      }
+
+      function buildAiReasons(house){
+        const reasons = [];
+        const tags = aiHouseTags(house);
+        const budget = Number(aiBudget.value || 0);
+        const commute = Number(aiCommute.value || 0);
+
+        if(budget && house.price <= budget) reasons.push(`月租${house.price}元，未超过当前预算`);
+        else if(budget) reasons.push(`租金高于预算${house.price - budget}元，但其他条件匹配较好`);
+
+        if(commute && house.commute <= commute) reasons.push(`模拟通勤约${house.commute}分钟，满足通勤要求`);
+        else reasons.push(`模拟通勤约${house.commute}分钟`);
+
+        if(tags.includes('环境安静')) reasons.push('环境安静，适合备考或居家办公');
+        if(tags.includes('配备书桌')) reasons.push('配备书桌，可直接用于学习和办公');
+        if(tags.includes('允许养宠物')) reasons.push('支持宠物友好需求');
+        if(tags.includes('押一付一')) reasons.push('支持押一付一，首次支付压力较低');
+        if(tags.includes('无中介费')) reasons.push('无中介费，可减少签约成本');
+        if(tags.includes('近地铁')) reasons.push('靠近地铁，日常出行更方便');
+        if(house.configs.includes('独立卫生间')) reasons.push('带独立卫生间，居住私密性较好');
+
+        return [...new Set(reasons)].slice(0,3);
+      }
+
+      function buildAiTradeoff(house){
+        const items = [];
+        const budget = Number(aiBudget.value || 0);
+        if(budget && house.price > budget) items.push(`超出预算${house.price - budget}元`);
+        if(house.elevator === '无电梯' && house.floor === '高楼层') items.push('高楼层且无电梯');
+        if(house.orientation.includes('北')) items.push('朝北，需现场确认采光');
+        if(house.commute > 60) items.push('通勤时间较长');
+        if(!house.leases.includes('无服务费')) items.push('可能存在服务费');
+        if(!items.length) items.push('需现场确认隔音、水压和实际采光');
+        return `主要取舍：${items.slice(0,2).join('；')}。`;
+      }
+
+      function renderRecommendations(){
+        const destination = aiDestination.value.trim() || '上海全市';
+        const ranked = (window.__sampleHouses || [])
+          .map(house => ({
+            ...house,
+            score:calculateScore(house),
+            type:aiHouseType(house),
+            tags:aiHouseTags(house),
+            reasons:buildAiReasons(house),
+            tradeoff:buildAiTradeoff(house)
+          }))
+          .sort((a,b) => b.score - a.score || a.price - b.price)
+          .slice(0,5);
+
+        document.getElementById('recommendSummary').textContent =
+          `以${destination}为范围，重点考虑${aiPriority.value || '综合均衡'}，从示例出租屋中筛选出5套推荐房源。`;
+
+        recommendList.innerHTML = ranked.map((house,index) => `
+          <article class="house-card" data-house-id="${house.id}" role="button" tabindex="0"
+            aria-label="打开${house.name}">
+            <div class="house-cover">
+              <span class="house-rank">推荐 ${index + 1}</span>
+              <div class="match-score">${house.score}<small>% 匹配</small></div>
+            </div>
+            <div class="house-body">
+              <div class="house-name">${house.name}</div>
+              <div class="house-basic">${house.type} · 通勤约${house.commute}分钟</div>
+              <div class="house-price">${house.price}<small> 元/月</small></div>
+              <div class="reason-title">推荐理由</div>
+              <ul class="reason-list">${house.reasons.map(item => `<li>${item}</li>`).join('')}</ul>
+              <div class="tradeoff">${house.tradeoff}</div>
+              <div class="card-actions">
+                <button class="compare-btn ${comparedHouses.includes(house.id) ? 'added' : ''}"
+                  type="button" data-compare-id="${house.id}">
+                  ${comparedHouses.includes(house.id) ? '已加入对比' : '加入对比'}
+                </button>
+              </div>
+            </div>
+          </article>
+        `).join('');
+
+        recommendSection.classList.remove('is-hidden');
+        recommendSection.scrollIntoView({behavior:'smooth',block:'start'});
+      }
+
+      const getHouse = id => (window.__sampleHouses || [])
+        .find(house => Number(house.id) === Number(id));
+
+      function toggleCompare(id){
+        id = Number(id);
+        if(comparedHouses.includes(id)){
+          comparedHouses = comparedHouses.filter(item => item !== id);
+        }else if(comparedHouses.length < 3){
+          comparedHouses.push(id);
+        }else{
+          appendMessage('assistant','对比栏最多保留3套房源，请先移除一套。');
+          return;
+        }
+        syncCompareButtons();
+        updateCompareDock();
+        if(comparedHouses.length < 2) compareSection.classList.add('is-hidden');
+      }
+
+      function syncCompareButtons(){
+        recommendList.querySelectorAll('[data-compare-id]').forEach(btn => {
+          const added = comparedHouses.includes(Number(btn.dataset.compareId));
+          btn.classList.toggle('added',added);
+          btn.textContent = added ? '已加入对比' : '加入对比';
+        });
+      }
+
+      function compareMonthlyCost(house){
+        const tags = aiHouseTags(house);
+        const service = tags.includes('无服务费') ? 0 : Math.round(house.price * .08);
+        const agency = tags.includes('无中介费') ? 0 : Math.round(house.price * .5 / 12);
+        return house.price + service + agency + 220;
+      }
+
+      function comparedObjects(){
+        return comparedHouses.map(getHouse).filter(Boolean);
+      }
+
+      function updateCompareDock(){
+        const selected = comparedObjects();
+        compareDock.innerHTML = `
+          <div class="compare-dock-title">
+            <span>房源对比（解决“几套都不错，不知道选哪套”）</span>
+            <span class="compare-dock-count">${selected.length}/3</span>
+          </div>
+          <ol class="compare-dock-steps">
+            <li>在推荐卡片中点击“加入对比”</li>
+            <li>选择2—3套正在犹豫的房源</li>
+            <li>点击下方按钮查看差异与结论</li>
+          </ol>
+          <div class="compare-dock-items">
+            ${selected.length ? selected.map(house => `
+              <div class="compare-dock-item">
+                <span>${house.name}</span>
+                <button class="compare-remove-btn" type="button" data-remove-compare="${house.id}" title="移除">×</button>
+              </div>`).join('') : '<div class="profile-empty">尚未选择房源</div>'}
+          </div>
+          <button class="compare-start-btn" type="button" data-start-compare
+            ${selected.length < 2 ? 'disabled' : ''}>
+            ${selected.length < 2 ? '至少选择2套房源' : '开始横向对比'}
+          </button>
+        `;
+      }
+
+      function renderComparison(){
+        const houses = comparedObjects().map(house => ({
+          ...house,
+          score:calculateScore(house),
+          monthlyCost:compareMonthlyCost(house),
+          reasons:buildAiReasons(house),
+          tradeoff:buildAiTradeoff(house)
+        }));
+        if(houses.length < 2) return;
+
+        const best = [...houses].sort((a,b) => b.score - a.score)[0];
+        const cheapest = [...houses].sort((a,b) => a.monthlyCost - b.monthlyCost)[0];
+        const fastest = [...houses].sort((a,b) => a.commute - b.commute)[0];
+
+        document.getElementById('compareConclusion').innerHTML = `
+          <div class="compare-conclusion-card primary"><strong>综合最推荐：${best.name}</strong>
+            <span>匹配度${best.score}%，在预算、通勤和生活偏好之间最均衡。</span></div>
+          <div class="compare-conclusion-card"><strong>总成本最低：${cheapest.name}</strong>
+            <span>月度综合成本约${cheapest.monthlyCost}元，适合预算优先。</span></div>
+          <div class="compare-conclusion-card"><strong>通勤最短：${fastest.name}</strong>
+            <span>模拟单程通勤约${fastest.commute}分钟，适合通勤优先。</span></div>`;
+
+        const row = (label,render) => `<tr><th>${label}</th>${houses.map(h => `<td>${render(h)}</td>`).join('')}</tr>`;
+        const min = key => Math.min(...houses.map(h => h[key]));
+        const max = key => Math.max(...houses.map(h => h[key]));
+
+        document.getElementById('compareTableWrap').innerHTML = `
+          <table class="compare-table">
+            <thead><tr><th>对比维度</th>${houses.map(h => `
+              <th><button class="compare-house-link" type="button" data-compare-detail="${h.id}">${h.name}</button></th>
+            `).join('')}</tr></thead>
+            <tbody>
+              ${row('AI匹配度',h => `<span class="${h.score === max('score') ? 'compare-best' : 'compare-score'}">${h.score}%</span>`)}
+              ${row('标注租金',h => `<span class="${h.price === min('price') ? 'compare-best' : ''}">${h.price}元/月</span>`)}
+              ${row('月度综合成本',h => `<span class="${h.monthlyCost === min('monthlyCost') ? 'compare-best' : ''}">约${h.monthlyCost}元</span>`)}
+              ${row('模拟通勤',h => `<span class="${h.commute === min('commute') ? 'compare-best' : ''}">${h.commute}分钟</span>`)}
+              ${row('租赁方式',h => h.rental.includes('整租') ? '整租' : '合租')}
+              ${row('户型面积',h => `${h.layouts[0] || (h.rental.includes('主卧') ? '主卧' : h.rental.includes('次卧') ? '次卧' : '单间')} · ${h.size}㎡`)}
+              ${row('朝向楼层',h => `${h.orientation.join('/')} · ${h.floor}`)}
+              ${row('电梯',h => h.elevator)}
+              ${row('主要配置',h => [...new Set([...h.configs,...h.life])].slice(0,5).join('、'))}
+              ${row('推荐理由',h => h.reasons.join('；'))}
+              ${row('主要取舍',h => `<span class="compare-warn">${h.tradeoff}</span>`)}
+            </tbody>
+          </table>`;
+
+        compareSection.classList.remove('is-hidden');
+        compareSection.scrollIntoView({behavior:'smooth',block:'start'});
+      }
+
+      recommendList.addEventListener('click', event => {
+        const compareBtn = event.target.closest('[data-compare-id]');
+        if(compareBtn){
+          event.stopPropagation();
+          toggleCompare(compareBtn.dataset.compareId);
+          return;
+        }
+        const card = event.target.closest('[data-house-id]');
+        if(card && typeof window.openHouseDetail === 'function'){
+          window.openHouseDetail(card.dataset.houseId);
+        }
+      });
+
+      recommendList.addEventListener('keydown', event => {
+        if((event.key === 'Enter' || event.key === ' ') && event.target.matches('[data-house-id]')){
+          event.preventDefault();
+          window.openHouseDetail?.(event.target.dataset.houseId);
+        }
+      });
+
+      compareDock.addEventListener('click', event => {
+        const remove = event.target.closest('[data-remove-compare]');
+        if(remove) toggleCompare(remove.dataset.removeCompare);
+        if(event.target.closest('[data-start-compare]')) renderComparison();
+      });
+
+      document.getElementById('clearCompareBtn').addEventListener('click', () => {
+        comparedHouses = [];
+        compareSection.classList.add('is-hidden');
+        syncCompareButtons();
+        updateCompareDock();
+      });
+      document.getElementById('closeCompareBtn').addEventListener('click', () =>
+        compareSection.classList.add('is-hidden')
+      );
+      document.getElementById('compareTableWrap').addEventListener('click', event => {
+        const link = event.target.closest('[data-compare-detail]');
+        if(link) window.openHouseDetail?.(link.dataset.compareDetail);
+      });
+
+      document.getElementById('recommendBtn').addEventListener('click', () => {
+        if(!aiBudget.value){
+          appendMessage('assistant','为了让推荐更有参考价值，请至少补充最高预算；未填写地点时将按上海全市推荐。');
+          return;
+        }
+        appendMessage('assistant','需求已确认。我正在按照预算、通勤、租赁方式和生活偏好进行模拟匹配，并同时标注每套房源的主要取舍。');
+        updateProfile();
+        renderRecommendations();
+      });
+      document.getElementById('refreshRecommendBtn').addEventListener('click', renderRecommendations);
+
+      document.getElementById('syncFilterBtn').addEventListener('click', () => {
+        if(typeof keyword !== 'undefined'){
+          keyword.value = aiDestination.value.trim();
+        }
+        if(typeof maxRent !== 'undefined'){
+          maxRent.value = aiBudget.value;
+        }
+        if(typeof landmarkInput !== 'undefined'){
+          landmarkInput.value = aiDestination.value.trim();
+        }
+
+        const rentalMap = {'整租':'m1','合租':'m2'};
+        const rentalId = rentalMap[aiRentalType.value];
+        if(rentalId && document.getElementById(rentalId)){
+          document.getElementById(rentalId).checked = true;
+          const all = document.getElementById('m0');
+          if(all) all.checked = false;
+        }
+
+        const commuteId = {'30':'c1','45':'c2','60':'c3','90':'c4'}[aiCommute.value];
+        if(commuteId && document.getElementById(commuteId)){
+          document.getElementById(commuteId).checked = true;
+          const all = document.getElementById('c0');
+          if(all) all.checked = false;
+        }
+
+        const prefMap = {
+          '近地铁':'feature1',
+          '环境安静':'life2',
+          '允许养宠物':'life1',
+          '配备书桌':'life4',
+          '采光良好':'config6',
+          '独立卫生间':'config1',
+          '押一付一':'lease1',
+          '无中介费':'lease2',
+          '靠近自习室':'life5'
+        };
+        getPreferences().forEach(pref => {
+          const id = prefMap[pref];
+          const target = id ? document.getElementById(id) : null;
+          if(target) target.checked = true;
+        });
+
+        if(typeof updateSummary === 'function') updateSummary();
+        switchMode('filter');
+      });
+
+      document.getElementById('resetAiBtn').addEventListener('click', () => {
+        currentScenario = '';
+        comparedHouses = [];
+        compareSection.classList.add('is-hidden');
+        aiNeedInput.value = '';
+        aiDestination.value = '';
+        aiBudget.value = '';
+        aiCommute.value = '';
+        aiRentalType.value = '';
+        aiLeaseTerm.value = '';
+        aiPriority.value = '综合均衡';
+        clearPreferences();
+        followupPanel.classList.add('is-hidden');
+        recommendSection.classList.add('is-hidden');
+        document.querySelectorAll('.scenario-btn').forEach(btn => btn.classList.remove('active'));
+        aiChat.innerHTML = `
+          <div class="chat-message assistant">
+            <div class="chat-avatar">AI</div>
+            <div class="chat-bubble">你好，我是AI选房助手。你可以告诉我：在哪里上班或学习、每月预算、可接受的通勤时间，以及对整租、合租、安静程度、宠物等方面的要求。</div>
+          </div>`;
+        updateCompareDock();
+        updateProfile();
+      });
+
+      // 原筛选页“AI搜索”按钮进入AI模块，并带入当前筛选条件
+      const aiSearchEntry = document.getElementById('aiSearchBtn');
+      if(aiSearchEntry){
+        aiSearchEntry.addEventListener('click', () => {
+          let carried = [];
+          try{
+            if(typeof selectedValues === 'function'){
+              carried = selectedValues().map(item => item.text);
+            }
+          }catch(e){}
+          if(carried.length){
+            aiNeedInput.value = `请根据这些条件帮我进一步选房：${carried.join('、')}。`;
+          }
+          switchMode('ai');
+        });
+      }
+
+      updateProfile();
+    })();
+  </script>
+
+</body>
+</html>
