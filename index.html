@@ -1,0 +1,585 @@
+<!DOCTYPE html>
+
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>AI租房功能原型</title>
+
+
+
+
+
+
+
+
+
+
+<link href="css/base.css" rel="stylesheet"/><link href="css/filter.css" rel="stylesheet"/><link href="css/ai.css" rel="stylesheet"/><link href="css/detail.css" rel="stylesheet"/><link href="css/compare-charts.css" rel="stylesheet"/></head>
+<body>
+<header class="topbar">
+<div class="topbar-inner">
+<div class="brand">
+<div class="brand-mark">屋</div>
+<span>AI租房功能原型</span>
+</div>
+<div class="page-label">常规筛选＋AI智能选房</div>
+</div>
+</header>
+<div class="mode-bar-wrap">
+<nav aria-label="找房方式切换" class="mode-bar">
+<button class="mode-item active" id="filterModeBtn">常规筛选</button>
+<button class="mode-item" id="aiModeBtn">AI智能选房</button>
+<span class="mode-note">交互原型：使用预设规则模拟AI能力，未接入大模型</span>
+</nav>
+</div>
+<main class="wrap" id="filterModule">
+<section class="panel main-panel">
+<div class="search-row">
+<div class="searchbox">
+<span class="search-icon">⌕</span>
+<input id="keyword" placeholder="搜索区域、商圈、小区、地铁站、学校、公司或具体地址" type="text"/>
+</div>
+<button class="primary-btn" id="searchBtn">应用搜索</button>
+<button class="ai-btn" id="aiSearchBtn">AI搜索</button>
+</div>
+<div class="section">
+<div class="section-head">
+<div class="section-title">位置</div>
+<div class="section-note">支持多种找房方式</div>
+</div>
+<div class="tab-row" id="locationTabs">
+<button class="tab active" data-target="region">按区域</button>
+<button class="tab" data-target="subway">按地铁</button>
+<button class="tab" data-target="commute">按通勤时间</button>
+<button class="tab" data-target="landmark">按学校 / 工作地点</button>
+</div>
+<div class="location-content active" id="region">
+<div class="subgroup-title">行政区域 / 商圈</div>
+<div class="option-grid" data-group="区域">
+<div class="option"><input checked="" data-all="true" id="r0" type="checkbox"/><label for="r0">全部</label></div>
+<div class="option"><input id="r1" type="checkbox"/><label for="r1">浦东新区</label></div>
+<div class="option"><input id="r2" type="checkbox"/><label for="r2">黄浦区</label></div>
+<div class="option"><input id="r3" type="checkbox"/><label for="r3">徐汇区</label></div>
+<div class="option"><input id="r4" type="checkbox"/><label for="r4">长宁区</label></div>
+<div class="option"><input id="r5" type="checkbox"/><label for="r5">静安区</label></div>
+<div class="option"><input id="r6" type="checkbox"/><label for="r6">普陀区</label></div>
+<div class="option"><input id="r7" type="checkbox"/><label for="r7">虹口区</label></div>
+<div class="option"><input id="r8" type="checkbox"/><label for="r8">杨浦区</label></div>
+<div class="option"><input id="r9" type="checkbox"/><label for="r9">闵行区</label></div>
+<div class="option"><input id="r10" type="checkbox"/><label for="r10">宝山区</label></div>
+<div class="option"><input id="r11" type="checkbox"/><label for="r11">嘉定区</label></div>
+<div class="option"><input id="r12" type="checkbox"/><label for="r12">松江区</label></div>
+<div class="option"><input id="r13" type="checkbox"/><label for="r13">青浦区</label></div>
+<div class="option"><input id="r14" type="checkbox"/><label for="r14">奉贤区</label></div>
+<div class="option"><input id="r15" type="checkbox"/><label for="r15">金山区</label></div>
+<div class="option"><input id="r16" type="checkbox"/><label for="r16">崇明区</label></div>
+</div>
+</div>
+<div class="location-content" id="subway">
+<div class="subgroup-title">地铁线路</div>
+<div class="option-grid" data-group="地铁">
+<div class="option"><input checked="" data-all="true" id="s0" type="checkbox"/><label for="s0">全部</label></div>
+<div class="option"><input id="s1" type="checkbox"/><label for="s1">1号线</label></div>
+<div class="option"><input id="s2" type="checkbox"/><label for="s2">2号线</label></div>
+<div class="option"><input id="s3" type="checkbox"/><label for="s3">3号线</label></div>
+<div class="option"><input id="s4" type="checkbox"/><label for="s4">4号线</label></div>
+<div class="option"><input id="s5" type="checkbox"/><label for="s5">5号线</label></div>
+<div class="option"><input id="s6" type="checkbox"/><label for="s6">6号线</label></div>
+<div class="option"><input id="s7" type="checkbox"/><label for="s7">7号线</label></div>
+<div class="option"><input id="s8" type="checkbox"/><label for="s8">8号线</label></div>
+<div class="option"><input id="s9" type="checkbox"/><label for="s9">9号线</label></div>
+<div class="option"><input id="s10" type="checkbox"/><label for="s10">10号线</label></div>
+<div class="option"><input id="s11" type="checkbox"/><label for="s11">11号线</label></div>
+<div class="option"><input id="s12" type="checkbox"/><label for="s12">12号线</label></div>
+<div class="option"><input id="s13" type="checkbox"/><label for="s13">13号线</label></div>
+<div class="option"><input id="s14" type="checkbox"/><label for="s14">14号线</label></div>
+<div class="option"><input id="s15" type="checkbox"/><label for="s15">15号线</label></div>
+<div class="option"><input id="s16" type="checkbox"/><label for="s16">16号线</label></div>
+<div class="option"><input id="s17" type="checkbox"/><label for="s17">17号线</label></div>
+<div class="option"><input id="s18" type="checkbox"/><label for="s18">18号线</label></div>
+<div class="option"><input id="s19" type="checkbox"/><label for="s19">浦江线</label></div>
+</div>
+</div>
+<div class="location-content" id="commute">
+<div class="subgroup-title">可接受的单程通勤时间</div>
+<div class="option-grid" data-group="通勤">
+<div class="option"><input checked="" data-all="true" id="c0" name="commute" type="radio"/><label for="c0">全部</label></div>
+<div class="option"><input id="c1" name="commute" type="radio"/><label for="c1">30分钟内</label></div>
+<div class="option"><input id="c2" name="commute" type="radio"/><label for="c2">45分钟内</label></div>
+<div class="option"><input id="c3" name="commute" type="radio"/><label for="c3">60分钟内</label></div>
+<div class="option"><input id="c4" name="commute" type="radio"/><label for="c4">90分钟内</label></div>
+</div>
+</div>
+<div class="location-content" id="landmark">
+<div class="subgroup-title">输入学校、公司或产业园区</div>
+<div class="inline-inputs">
+<input class="small-input" id="landmarkInput" placeholder="如：同济大学、张江高科" style="width:min(100%,360px)">
+</input></div>
+</div>
+</div>
+<div class="section">
+<div class="section-head"><div class="section-title">租赁方式</div></div>
+<div class="option-grid" data-group="方式">
+<div class="option"><input checked="" data-all="true" id="m0" type="checkbox"/><label for="m0">全部</label></div>
+<div class="option"><input id="m1" type="checkbox"/><label for="m1">整租</label></div>
+<div class="option"><input id="m2" type="checkbox"/><label for="m2">合租</label></div>
+<div class="option"><input id="m3" type="checkbox"/><label for="m3">单间</label></div>
+<div class="option"><input id="m4" type="checkbox"/><label for="m4">主卧</label></div>
+<div class="option"><input id="m5" type="checkbox"/><label for="m5">次卧</label></div>
+<div class="option"><input id="m6" type="checkbox"/><label for="m6">短租</label></div>
+<div class="option"><input id="m7" type="checkbox"/><label for="m7">月租</label></div>
+</div>
+<div class="subgroup collapsed" id="roommateGroup">
+<div class="subgroup-title">合租偏好</div>
+<div class="option-grid" data-group="合租偏好">
+<div class="option"><input id="rm1" type="checkbox"/><label for="rm1">同性室友</label></div>
+<div class="option"><input id="rm2" type="checkbox"/><label for="rm2">作息规律</label></div>
+<div class="option"><input id="rm3" type="checkbox"/><label for="rm3">不吸烟</label></div>
+<div class="option"><input id="rm4" type="checkbox"/><label for="rm4">学生 / 备考人群</label></div>
+</div>
+</div>
+</div>
+<div class="section">
+<div class="section-head"><div class="section-title">租金</div><div class="section-note">支持标价租金与综合成本</div></div>
+<div class="tab-row" id="rentModeTabs">
+<button class="tab active" data-rentmode="rent">标价租金</button>
+<button class="tab" data-rentmode="total">月度综合成本</button>
+</div>
+<div class="option-grid" data-group="租金">
+<div class="option"><input checked="" data-all="true" id="p0" name="rent" type="radio"/><label for="p0">全部</label></div>
+<div class="option"><input id="p1" name="rent" type="radio"/><label for="p1">1000元以下</label></div>
+<div class="option"><input id="p2" name="rent" type="radio"/><label for="p2">1000–1500元</label></div>
+<div class="option"><input id="p3" name="rent" type="radio"/><label for="p3">1500–2000元</label></div>
+<div class="option"><input id="p4" name="rent" type="radio"/><label for="p4">2000–2500元</label></div>
+<div class="option"><input id="p5" name="rent" type="radio"/><label for="p5">2500–3000元</label></div>
+<div class="option"><input id="p6" name="rent" type="radio"/><label for="p6">3000–5000元</label></div>
+<div class="option"><input id="p7" name="rent" type="radio"/><label for="p7">5000元以上</label></div>
+</div>
+<div class="inline-inputs">
+<input class="small-input" id="minRent" placeholder="最低租金" type="number"/>
+<span>—</span>
+<input class="small-input" id="maxRent" placeholder="最高租金" type="number"/>
+<span>元 / 月</span>
+</div>
+</div>
+<div class="section">
+<div class="section-head"><div class="section-title">户型与面积</div></div>
+<div class="subgroup-title">户型</div>
+<div class="option-grid" data-group="户型">
+<div class="option"><input checked="" data-all="true" id="h0" type="checkbox"/><label for="h0">全部</label></div>
+<div class="option"><input id="h1" type="checkbox"/><label for="h1">开间</label></div>
+<div class="option"><input id="h2" type="checkbox"/><label for="h2">一居室</label></div>
+<div class="option"><input id="h3" type="checkbox"/><label for="h3">两居室</label></div>
+<div class="option"><input id="h4" type="checkbox"/><label for="h4">三居室</label></div>
+<div class="option"><input id="h5" type="checkbox"/><label for="h5">四居室及以上</label></div>
+<div class="option"><input id="h6" type="checkbox"/><label for="h6">独立卫浴房间</label></div>
+</div>
+<div class="subgroup">
+<div class="subgroup-title">面积</div>
+<div class="option-grid" data-group="面积">
+<div class="option"><input checked="" data-all="true" id="a0" name="area" type="radio"/><label for="a0">全部</label></div>
+<div class="option"><input id="a1" name="area" type="radio"/><label for="a1">20㎡以下</label></div>
+<div class="option"><input id="a2" name="area" type="radio"/><label for="a2">20–40㎡</label></div>
+<div class="option"><input id="a3" name="area" type="radio"/><label for="a3">40–60㎡</label></div>
+<div class="option"><input id="a4" name="area" type="radio"/><label for="a4">60–90㎡</label></div>
+<div class="option"><input id="a5" name="area" type="radio"/><label for="a5">90㎡以上</label></div>
+</div>
+</div>
+</div>
+<button class="more-btn" id="moreBtn">展开更多筛选</button>
+<div class="collapsed" id="advanced">
+<div class="section">
+<div class="section-head">
+<div class="section-title">品牌与运营方</div>
+<div class="section-note">参考主流平台的品牌筛选</div>
+</div>
+<div class="option-grid" data-group="品牌">
+<div class="option"><input checked="" data-all="true" id="brand0" type="checkbox"/><label for="brand0">全部</label></div>
+<div class="option"><input id="brand1" type="checkbox"/><label for="brand1">贝壳省心租</label></div>
+<div class="option"><input id="brand2" type="checkbox"/><label for="brand2">链家</label></div>
+<div class="option"><input id="brand3" type="checkbox"/><label for="brand3">自如</label></div>
+<div class="option"><input id="brand4" type="checkbox"/><label for="brand4">魔方公寓</label></div>
+<div class="option"><input id="brand5" type="checkbox"/><label for="brand5">泊寓</label></div>
+<div class="option"><input id="brand6" type="checkbox"/><label for="brand6">城家公寓</label></div>
+<div class="option"><input id="brand7" type="checkbox"/><label for="brand7">其他品牌公寓</label></div>
+</div>
+</div>
+<div class="section">
+<div class="section-head">
+<div class="section-title">房屋基础条件</div>
+<div class="section-note">将朝向、装修、楼层和电梯分组展示</div>
+</div>
+<div class="subgroup">
+<div class="subgroup-title">朝向</div>
+<div class="option-grid" data-group="朝向">
+<div class="option"><input checked="" data-all="true" id="ori0" type="checkbox"/><label for="ori0">全部</label></div>
+<div class="option"><input id="ori1" type="checkbox"/><label for="ori1">东</label></div>
+<div class="option"><input id="ori2" type="checkbox"/><label for="ori2">西</label></div>
+<div class="option"><input id="ori3" type="checkbox"/><label for="ori3">南</label></div>
+<div class="option"><input id="ori4" type="checkbox"/><label for="ori4">北</label></div>
+<div class="option"><input id="ori5" type="checkbox"/><label for="ori5">南北通透</label></div>
+</div>
+</div>
+<div class="subgroup">
+<div class="subgroup-title">装修</div>
+<div class="option-grid" data-group="装修">
+<div class="option"><input checked="" data-all="true" id="dec0" type="checkbox"/><label for="dec0">全部</label></div>
+<div class="option"><input id="dec1" type="checkbox"/><label for="dec1">精装修</label></div>
+<div class="option"><input id="dec2" type="checkbox"/><label for="dec2">简单装修</label></div>
+<div class="option"><input id="dec3" type="checkbox"/><label for="dec3">毛坯</label></div>
+<div class="option"><input id="dec4" type="checkbox"/><label for="dec4">拎包入住</label></div>
+</div>
+</div>
+<div class="subgroup">
+<div class="subgroup-title">楼层</div>
+<div class="option-grid" data-group="楼层">
+<div class="option"><input checked="" data-all="true" id="floor0" name="floor" type="radio"/><label for="floor0">全部</label></div>
+<div class="option"><input id="floor1" name="floor" type="radio"/><label for="floor1">低楼层</label></div>
+<div class="option"><input id="floor2" name="floor" type="radio"/><label for="floor2">中楼层</label></div>
+<div class="option"><input id="floor3" name="floor" type="radio"/><label for="floor3">高楼层</label></div>
+</div>
+</div>
+<div class="subgroup">
+<div class="subgroup-title">电梯</div>
+<div class="option-grid" data-group="电梯">
+<div class="option"><input checked="" data-all="true" id="elevator0" name="elevator" type="radio"/><label for="elevator0">全部</label></div>
+<div class="option"><input id="elevator1" name="elevator" type="radio"/><label for="elevator1">有电梯</label></div>
+<div class="option"><input id="elevator2" name="elevator" type="radio"/><label for="elevator2">无电梯</label></div>
+</div>
+</div>
+<div class="subgroup">
+<div class="subgroup-title">房屋配置</div>
+<div class="option-grid" data-group="房屋配置">
+<div class="option"><input checked="" data-all="true" id="config0" type="checkbox"/><label for="config0">全部</label></div>
+<div class="option"><input id="config1" type="checkbox"/><label for="config1">独立卫生间</label></div>
+<div class="option"><input id="config2" type="checkbox"/><label for="config2">有阳台</label></div>
+<div class="option"><input id="config3" type="checkbox"/><label for="config3">可做饭</label></div>
+<div class="option"><input id="config4" type="checkbox"/><label for="config4">家具齐全</label></div>
+<div class="option"><input id="config5" type="checkbox"/><label for="config5">配备空调</label></div>
+<div class="option"><input id="config6" type="checkbox"/><label for="config6">采光良好</label></div>
+</div>
+</div>
+</div>
+<div class="section">
+<div class="section-head">
+<div class="section-title">租期</div>
+<div class="section-note">补充竞品常见的短租与起租时间筛选</div>
+</div>
+<div class="option-grid" data-group="租期">
+<div class="option"><input checked="" data-all="true" id="term0" name="termFilter" type="radio"/><label for="term0">全部</label></div>
+<div class="option"><input id="term1" name="termFilter" type="radio"/><label for="term1">月租</label></div>
+<div class="option"><input id="term2" name="termFilter" type="radio"/><label for="term2">年租</label></div>
+<div class="option"><input id="term3" name="termFilter" type="radio"/><label for="term3">1个月起租</label></div>
+<div class="option"><input id="term4" name="termFilter" type="radio"/><label for="term4">1—3个月</label></div>
+<div class="option"><input id="term5" name="termFilter" type="radio"/><label for="term5">4—6个月</label></div>
+<div class="option"><input id="term6" name="termFilter" type="radio"/><label for="term6">半年租</label></div>
+<div class="option"><input id="term7" name="termFilter" type="radio"/><label for="term7">可续租</label></div>
+</div>
+</div>
+<div class="section">
+<div class="section-head">
+<div class="section-title">特色与看房方式</div>
+</div>
+<div class="option-grid" data-group="特色">
+<div class="option"><input checked="" data-all="true" id="feature0" type="checkbox"/><label for="feature0">全部</label></div>
+<div class="option"><input id="feature1" type="checkbox"/><label for="feature1">近地铁</label></div>
+<div class="option"><input id="feature2" type="checkbox"/><label for="feature2">新上房源</label></div>
+<div class="option"><input id="feature3" type="checkbox"/><label for="feature3">认证公寓</label></div>
+<div class="option"><input id="feature4" type="checkbox"/><label for="feature4">随时看房</label></div>
+<div class="option"><input id="feature5" type="checkbox"/><label for="feature5">VR房源</label></div>
+<div class="option"><input id="feature6" type="checkbox"/><label for="feature6">视频看房</label></div>
+<div class="option"><input id="feature7" type="checkbox"/><label for="feature7">业主自荐</label></div>
+<div class="option"><input id="feature8" type="checkbox"/><label for="feature8">只看有图</label></div>
+</div>
+</div>
+<div class="section">
+<div class="section-head"><div class="section-title">租赁条件</div></div>
+<div class="option-grid" data-group="租赁条件">
+<div class="option"><input checked="" data-all="true" id="lease0" type="checkbox"/><label for="lease0">全部</label></div>
+<div class="option"><input id="lease1" type="checkbox"/><label for="lease1">押一付一</label></div>
+<div class="option"><input id="lease2" type="checkbox"/><label for="lease2">无中介费</label></div>
+<div class="option"><input id="lease3" type="checkbox"/><label for="lease3">无服务费</label></div>
+<div class="option"><input id="lease4" type="checkbox"/><label for="lease4">支持转租</label></div>
+<div class="option"><input id="lease5" type="checkbox"/><label for="lease5">可办理居住登记</label></div>
+<div class="option"><input id="lease6" type="checkbox"/><label for="lease6">近期可入住</label></div>
+<div class="option"><input id="lease7" type="checkbox"/><label for="lease7">可线上签约</label></div>
+</div>
+</div>
+<div class="section">
+<div class="section-head"><div class="section-title">生活偏好</div></div>
+<div class="option-grid" data-group="生活偏好">
+<div class="option"><input checked="" data-all="true" id="life0" type="checkbox"/><label for="life0">全部</label></div>
+<div class="option"><input id="life1" type="checkbox"/><label for="life1">允许养宠物</label></div>
+<div class="option"><input id="life2" type="checkbox"/><label for="life2">环境安静</label></div>
+<div class="option"><input id="life3" type="checkbox"/><label for="life3">网络稳定</label></div>
+<div class="option"><input id="life4" type="checkbox"/><label for="life4">配备书桌</label></div>
+<div class="option"><input id="life5" type="checkbox"/><label for="life5">靠近自习室</label></div>
+<div class="option"><input id="life6" type="checkbox"/><label for="life6">靠近高校</label></div>
+<div class="option"><input id="life7" type="checkbox"/><label for="life7">靠近餐饮便利店</label></div>
+<div class="option"><input id="life8" type="checkbox"/><label for="life8">有停车位</label></div>
+<div class="option"><input id="life9" type="checkbox"/><label for="life9">支持电动车充电</label></div>
+</div>
+</div>
+<div class="section">
+<div class="section-head"><div class="section-title">房源来源与可信度</div></div>
+<div class="option-grid" data-group="房源保障">
+<div class="option"><input checked="" data-all="true" id="trust0" type="checkbox"/><label for="trust0">全部</label></div>
+<div class="option"><input id="trust1" type="checkbox"/><label for="trust1">个人房东直租</label></div>
+<div class="option"><input id="trust2" type="checkbox"/><label for="trust2">经纪人房源</label></div>
+<div class="option"><input id="trust3" type="checkbox"/><label for="trust3">品牌公寓</label></div>
+<div class="option"><input id="trust4" type="checkbox"/><label for="trust4">平台认证房源</label></div>
+<div class="option"><input id="trust5" type="checkbox"/><label for="trust5">官方核验房源</label></div>
+<div class="option"><input id="trust6" type="checkbox"/><label for="trust6">近期核验</label></div>
+<div class="option"><input id="trust7" type="checkbox"/><label for="trust7">价格已核验</label></div>
+</div>
+</div>
+</div>
+<div class="footer-actions">
+<button class="ghost-btn" id="clearBtn">清空条件</button>
+<button class="primary-btn" id="applyBtn">应用筛选</button>
+</div>
+</section>
+<aside class="panel summary-panel">
+<div class="summary-title">筛选结果预览</div>
+<div class="count-box">
+<div class="count" id="resultCount">286</div>
+<div class="count-label">符合条件的房源数量</div>
+</div>
+<div class="summary-block">
+<div class="summary-label">已选条件</div>
+<div class="selected-list" id="selectedList">
+<span class="empty">尚未选择筛选条件</span>
+</div>
+</div>
+<div class="summary-block">
+<div class="summary-label">排序方式</div>
+<select class="sort-select" id="sortSelect">
+<option>综合推荐</option>
+<option>最新发布</option>
+<option>租金从低到高</option>
+<option>租金从高到低</option>
+<option>距离从近到远</option>
+<option>通勤时间从短到长</option>
+<option>匹配度从高到低</option>
+<option>房源可信度从高到低</option>
+</select>
+</div>
+<div class="summary-block">
+<div class="switch-row">
+<div>
+<div style="font-weight:700">保存当前筛选</div>
+<div class="section-note">仅保留本次筛选方案</div>
+</div>
+<div class="switch" id="saveSwitch"></div>
+</div>
+</div>
+<div class="summary-block">
+<div class="switch-row">
+<div>
+<div style="font-weight:700">新房源提醒</div>
+<div class="section-note">出现符合条件房源时提醒</div>
+</div>
+<div class="switch" id="noticeSwitch"></div>
+</div>
+</div>
+<div id="hintArea">
+<div class="ok-box">当前条件较宽松，适合先浏览整体房源，再逐步缩小范围。</div>
+</div>
+</aside>
+<section class="sample-house-panel" id="sampleHousePanel">
+<div class="sample-house-head">
+<div>
+<div class="sample-house-title">公开在租房源</div>
+<div class="sample-house-note">以下房源来自上传表格中的链家/贝壳与58同城公开可访问字段；缺失字段保留为“暂无数据”。</div>
+</div>
+<div class="sample-house-total">当前显示 <strong id="sampleHouseCount">0</strong> 套</div>
+</div>
+<div class="sample-house-grid" id="sampleHouseGrid"></div>
+<div class="sample-pagination" id="sampleHousePagination"></div>
+</section>
+</main>
+<main class="house-detail-module is-hidden" id="houseDetailModule">
+<div class="detail-container" id="houseDetailContent"></div>
+</main>
+<div class="detail-toast" id="detailToast"></div>
+<main class="ai-wrap is-hidden" id="aiModule">
+<section class="ai-workspace">
+<div class="ai-title-row">
+<div>
+<button class="ai-back-filter-btn" id="backToFilterBtn" type="button">← 返回常规筛选</button>
+<h1 class="ai-title">AI智能选房</h1>
+<p class="ai-subtitle">用一句话描述你的预算、地点、通勤和生活偏好，系统会整理需求、补充追问并生成可解释的房源推荐。</p>
+</div>
+<span class="demo-badge">规则模拟演示</span>
+</div>
+<div class="scenario-label">快速选择租房场景</div>
+<div class="scenario-row" id="scenarioRow">
+<button class="scenario-btn" data-scenario="应届毕业生">应届毕业生</button>
+<button class="scenario-btn" data-scenario="考研备考">考研备考</button>
+<button class="scenario-btn" data-scenario="异地就业">异地就业</button>
+<button class="scenario-btn" data-scenario="通勤优先">通勤优先</button>
+<button class="scenario-btn" data-scenario="低预算">低预算</button>
+<button class="scenario-btn" data-scenario="宠物友好">宠物友好</button>
+</div>
+<div class="ai-chat" id="aiChat">
+<div class="chat-message assistant">
+<div class="chat-avatar">AI</div>
+<div class="chat-bubble">你好，我是AI选房助手。你可以告诉我：在哪里上班或学习、每月预算、可接受的通勤时间，以及对整租、合租、安静程度、宠物等方面的要求。</div>
+</div>
+</div>
+<div class="ai-input-area">
+<textarea id="aiNeedInput" placeholder="例如：预算1800元以内，整租，近地铁，通勤30分钟内。"></textarea>
+<button class="ai-main-btn" id="parseNeedBtn">解析需求</button>
+</div>
+<div class="example-row">
+<span>示例：</span>
+<button class="example-btn" data-example="我想找有书桌的房源，最好适合学习办公。">学习办公型</button>
+<button class="example-btn" data-example="我养猫，希望整租，近地铁，允许养宠物，通勤45分钟内。">宠物友好型</button>
+<button class="example-btn" data-example="预算2500元以内，整租，近地铁，通勤45分钟内。">低预算通勤型</button>
+</div>
+<section class="followup-panel is-hidden" id="followupPanel">
+<div class="followup-head">
+<div class="followup-title">需求确认与补充</div>
+<div class="followup-tip">AI已将自然语言转换为可筛选条件，你可以继续修改</div>
+</div>
+<div class="followup-grid">
+<div class="field">
+<label for="aiDestination">工作 / 学习地点</label>
+<input id="aiDestination" placeholder="如：张江高科、同济大学"/>
+</div>
+<div class="field">
+<label for="aiBudget">最高月预算（元）</label>
+<input id="aiBudget" placeholder="如：3000" type="number"/>
+</div>
+<div class="field">
+<label for="aiCommute">最长单程通勤</label>
+<select id="aiCommute">
+<option value="">暂不限制</option>
+<option value="30">30分钟以内</option>
+<option value="45">45分钟以内</option>
+<option value="60">60分钟以内</option>
+<option value="90">90分钟以内</option>
+</select>
+</div>
+<div class="field">
+<label for="aiRentalType">租赁方式</label>
+<select id="aiRentalType">
+<option value="">尚未确定</option>
+<option value="整租">整租</option>
+<option value="合租">合租</option>
+<option value="均可">整租、合租均可</option>
+</select>
+</div>
+<div class="field">
+<label for="aiLeaseTerm">租期</label>
+<select id="aiLeaseTerm">
+<option value="">尚未确定</option>
+<option value="月租">月租</option>
+<option value="1—3个月">1—3个月</option>
+<option value="4—6个月">4—6个月</option>
+<option value="半年租">半年租</option>
+<option value="年租">年租</option>
+</select>
+</div>
+<div class="field">
+<label for="aiPriority">最重要的条件</label>
+<select id="aiPriority">
+<option value="综合均衡">综合均衡</option>
+<option value="预算优先">预算优先</option>
+<option value="通勤优先">通勤优先</option>
+<option value="居住环境优先">居住环境优先</option>
+</select>
+</div>
+<div class="field preference-box">
+<label>生活与房屋偏好（可多选）</label>
+<div class="preference-options" id="aiPreferences">
+<label class="pref-option"><input type="checkbox" value="近地铁"/>近地铁</label>
+<label class="pref-option"><input type="checkbox" value="环境安静"/>环境安静</label>
+<label class="pref-option"><input type="checkbox" value="允许养宠物"/>允许养宠物</label>
+<label class="pref-option"><input type="checkbox" value="配备书桌"/>配备书桌</label>
+<label class="pref-option"><input type="checkbox" value="采光良好"/>采光良好</label>
+<label class="pref-option"><input type="checkbox" value="独立卫生间"/>独立卫生间</label>
+<label class="pref-option"><input type="checkbox" value="押一付一"/>押一付一</label>
+<label class="pref-option"><input type="checkbox" value="无中介费"/>无中介费</label>
+<label class="pref-option"><input type="checkbox" value="靠近自习室"/>靠近自习室</label>
+</div>
+</div>
+</div>
+<div class="followup-actions">
+<button class="ai-secondary-btn" id="addQuestionBtn">模拟AI继续追问</button>
+<button class="ai-recommend-btn" id="recommendBtn">确认需求并推荐</button>
+</div>
+</section>
+<section class="recommend-section is-hidden" id="recommendSection">
+<div class="recommend-head">
+<div>
+<div class="recommend-title">AI推荐结果</div>
+<div class="recommend-desc" id="recommendSummary">按照预算、通勤、租赁方式和生活偏好综合排序</div>
+<div class="recommend-click-tip">点击房源卡片任意位置进入详情；“加入对比”仅用于横向比较，不会跳转。</div>
+</div>
+<button class="ai-secondary-btn" id="refreshRecommendBtn">重新计算</button>
+</div>
+<div class="recommend-list" id="recommendList"></div>
+</section>
+<section class="ai-compare-section is-hidden" id="aiCompareSection">
+<div class="ai-compare-head">
+<div>
+<div class="ai-compare-title">房源横向对比</div>
+<div class="ai-compare-subtitle">
+              当多套房源都符合需求但难以取舍时，对比功能会把价格、综合成本、通勤、面积、配置和缺点放在同一张表中，并给出综合最推荐、最低成本和最短通勤结论。
+            </div>
+</div>
+<div class="ai-compare-actions">
+<button class="compare-clear-all" id="clearCompareBtn" type="button">清空对比</button>
+<button class="compare-close-btn" id="closeCompareBtn" type="button">收起</button>
+</div>
+</div>
+<div class="compare-conclusion" id="compareConclusion"></div>
+<div class="compare-chart-grid" id="compareCharts"></div>
+<div class="compare-table-wrap" id="compareTableWrap"></div>
+</section>
+</section>
+<aside class="ai-profile">
+<div class="profile-title">当前租房画像</div>
+<div class="profile-subtitle">需求越完整，推荐结果越准确</div>
+<div class="profile-progress">
+<div class="progress-info">
+<span>需求完整度</span>
+<strong id="profileProgressText">20%</strong>
+</div>
+<div class="progress-track"><div class="progress-bar" id="profileProgressBar"></div></div>
+</div>
+<div class="profile-group">
+<div class="profile-group-title">用户场景</div>
+<div class="profile-tags" id="scenarioTags"><span class="profile-empty">尚未选择</span></div>
+</div>
+<div class="profile-group">
+<div class="profile-group-title">基本条件</div>
+<div class="profile-detail"><span>地点</span><span id="profileDestination">待补充</span></div>
+<div class="profile-detail"><span>预算</span><span id="profileBudget">待补充</span></div>
+<div class="profile-detail"><span>通勤</span><span id="profileCommute">待补充</span></div>
+<div class="profile-detail"><span>方式</span><span id="profileRental">待补充</span></div>
+<div class="profile-detail"><span>租期</span><span id="profileLease">待补充</span></div>
+</div>
+<div class="profile-group">
+<div class="profile-group-title">生活偏好</div>
+<div class="profile-tags" id="preferenceTags"><span class="profile-empty">尚未识别</span></div>
+</div>
+<div class="profile-group">
+<div class="profile-group-title">AI识别说明</div>
+<div class="profile-detail"><span>推荐逻辑</span><span id="profilePriority">综合均衡</span></div>
+<div class="profile-detail"><span>信息状态</span><span id="profileStatus">等待描述需求</span></div>
+</div>
+<div class="profile-actions">
+<button class="sync-filter-btn" id="syncFilterBtn">同步到常规筛选</button>
+<button class="reset-ai-btn" id="resetAiBtn">重新开始</button>
+</div>
+<div class="compare-dock" id="compareDock">对比栏：尚未加入房源，可从推荐结果中选择2—3套房源。</div>
+</aside>
+</main>
+
+
+
+<script src="js/data.js"></script><script src="js/utils.js"></script><script src="js/filter.js"></script><script src="js/detail.js"></script><script src="js/ai-recommend.js"></script></body>
+</html>
