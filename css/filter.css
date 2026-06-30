@@ -1,0 +1,874 @@
+/* ===== 竞品式筛选布局覆盖 ===== */
+
+
+/* 竞品式横向筛选布局：左侧条件名，右侧选项 */
+    body{
+      background:#f5f6f8;
+    }
+    .wrap{
+      max-width:1560px;
+      grid-template-columns:1fr;
+      gap:16px;
+      margin-top:24px;
+    }
+    .panel{
+      border-radius:0;
+      box-shadow:none;
+      border:1px solid #e5e8ee;
+    }
+    .main-panel{
+      padding:24px 28px 18px;
+    }
+
+    .section{
+      display:grid;
+      grid-template-columns:118px minmax(0,1fr);
+      column-gap:22px;
+      row-gap:10px;
+      align-items:start;
+      padding:15px 0;
+      border-top:1px solid #edf0f4;
+    }
+    .section:first-of-type{
+      padding-top:4px;
+    }
+    .section-head{
+      grid-column:1;
+      display:block;
+      margin:0;
+      padding-top:4px;
+    }
+    .section-title{
+      font-size:15px;
+      line-height:28px;
+      font-weight:800;
+      color:#202736;
+      white-space:nowrap;
+    }
+    .section-note{
+      margin-top:4px;
+      font-size:11px;
+      line-height:1.5;
+      color:#9aa2b1;
+    }
+
+    .section > .tab-row,
+    .section > .option-grid,
+    .section > .location-content,
+    .section > .inline-inputs,
+    .section > .subgroup{
+      grid-column:2;
+    }
+    .section > .tab-row{
+      margin:0 0 4px;
+    }
+    .location-content{
+      margin-top:0;
+    }
+
+    /* 二级条件仍采用“名称在左、选项在右” */
+    .subgroup{
+      display:grid;
+      grid-template-columns:92px minmax(0,1fr);
+      column-gap:16px;
+      align-items:start;
+      margin-top:8px;
+    }
+    .subgroup-title{
+      grid-column:1;
+      margin:0;
+      padding-top:5px;
+      font-size:14px;
+      line-height:28px;
+      font-weight:800;
+      color:#303746;
+      white-space:nowrap;
+    }
+    .subgroup > .option-grid,
+    .subgroup > .inline-inputs{
+      grid-column:2;
+      margin:0;
+    }
+
+    /* 选项改为竞品式文字排列，不使用胶囊按钮 */
+    .option-grid{
+      gap:5px 20px;
+      align-items:center;
+    }
+    .option label{
+      position:relative;
+      min-height:30px;
+      padding:4px 2px 4px 25px;
+      border:0;
+      border-radius:0;
+      background:transparent;
+      color:#253047;
+      font-size:14px;
+      line-height:22px;
+      font-weight:400;
+      white-space:nowrap;
+    }
+    .option label:hover{
+      color:var(--primary);
+    }
+    .option input:checked + label{
+      border:0;
+      background:transparent;
+      color:var(--primary);
+      font-weight:400;
+    }
+
+    /* 多选方框：未选为空框，选中后填充 */
+    .option input[type="checkbox"] + label::before{
+      content:"";
+      position:absolute;
+      left:1px;
+      top:50%;
+      width:15px;
+      height:15px;
+      transform:translateY(-50%);
+      border:1px solid #c7ccd5;
+      border-radius:3px;
+      background:#fff;
+      transition:.15s ease;
+    }
+    .option input[type="checkbox"]:checked + label::before{
+      border-color:var(--primary);
+      background:var(--primary);
+      box-shadow:inset 0 0 0 2px var(--primary);
+    }
+    .option input[type="checkbox"]:checked + label::after{
+      content:"✓";
+      position:absolute;
+      left:4px;
+      top:50%;
+      transform:translateY(-54%);
+      color:#fff;
+      font-size:11px;
+      font-weight:800;
+      line-height:1;
+    }
+
+    /* 单选仍使用圆形标记，避免与多选混淆 */
+    .option input[type="radio"] + label::before{
+      content:"";
+      position:absolute;
+      left:1px;
+      top:50%;
+      width:15px;
+      height:15px;
+      transform:translateY(-50%);
+      border:1px solid #c7ccd5;
+      border-radius:50%;
+      background:#fff;
+      transition:.15s ease;
+    }
+    .option input[type="radio"]:checked + label::before{
+      border-color:var(--primary);
+      background:radial-gradient(circle at center,var(--primary) 0 4px,#fff 5px 100%);
+    }
+
+    /* 顶部切换项保持轻量文字样式 */
+    .tab{
+      border:0;
+      border-radius:0;
+      padding:5px 3px;
+      margin-right:22px;
+      background:transparent;
+      color:#253047;
+      font-weight:400;
+    }
+    .tab:hover{
+      border:0;
+      color:var(--primary);
+    }
+    .tab.active{
+      border:0;
+      background:transparent;
+      color:var(--primary);
+      font-weight:700;
+      box-shadow:inset 0 -2px 0 var(--primary);
+    }
+
+    .inline-inputs{
+      margin-top:8px;
+    }
+    .small-input{
+      border-radius:2px;
+      height:36px;
+    }
+
+    .more-btn{
+      margin-top:8px;
+      border-radius:0;
+      border:0;
+      border-top:1px solid #e6e9ef;
+      background:#fff;
+    }
+    .footer-actions{
+      border-top:1px solid #edf0f4;
+      background:#fff;
+      padding:16px 0 0;
+    }
+
+    /* 结果预览保留，但改为横向信息区，不占用右侧筛选空间 */
+    .summary-panel{
+      position:static;
+      display:grid;
+      grid-template-columns:220px minmax(250px,1fr) minmax(180px,.7fr) minmax(240px,1fr);
+      gap:0 26px;
+      align-items:start;
+      padding:18px 24px;
+    }
+    .summary-title{
+      grid-column:1 / -1;
+      margin-bottom:12px;
+    }
+    .count-box{
+      margin:0;
+    }
+    .summary-block{
+      border-top:0;
+      padding:0;
+    }
+    #hintArea{
+      align-self:stretch;
+    }
+    #hintArea .ok-box,
+    #hintArea .hint-box{
+      margin-top:0;
+      min-height:72px;
+    }
+
+    @media (max-width:1000px){
+      .summary-panel{
+        grid-template-columns:1fr 1fr;
+        gap:18px;
+      }
+      .section{
+        grid-template-columns:100px minmax(0,1fr);
+      }
+    }
+    @media (max-width:700px){
+      .main-panel{
+        padding:18px 16px;
+      }
+      .section{
+        display:block;
+        padding:16px 0;
+      }
+      .section-head{
+        margin-bottom:8px;
+      }
+      .section > .tab-row,
+      .section > .option-grid,
+      .section > .location-content,
+      .section > .inline-inputs,
+      .section > .subgroup{
+        width:100%;
+      }
+      .subgroup{
+        grid-template-columns:78px minmax(0,1fr);
+      }
+      .summary-panel{
+        grid-template-columns:1fr;
+      }
+      .search-row{
+        grid-template-columns:1fr;
+      }
+      .search-row button{
+        width:100%;
+      }
+    }
+
+
+/* ===== 紧凑布局覆盖 ===== */
+
+
+/* 紧凑版：尽量在单个桌面屏幕中展示全部筛选条件 */
+    body{
+      font-size:12px;
+      background:#f5f6f8;
+    }
+    .topbar-inner{
+      height:52px;
+      padding:0 22px;
+    }
+    .brand{
+      font-size:17px;
+      gap:9px;
+    }
+    .brand-mark{
+      width:30px;
+      height:30px;
+      border-radius:8px;
+      font-size:13px;
+    }
+    .page-label{
+      font-size:11px;
+    }
+
+    .wrap{
+      max-width:1660px;
+      margin:12px auto;
+      padding:0 18px 16px;
+      grid-template-columns:1fr;
+      gap:8px;
+    }
+    .main-panel{
+      padding:14px 20px 10px;
+    }
+    .search-row{
+      grid-template-columns:minmax(0,1fr) auto auto;
+      gap:8px;
+      margin-bottom:10px;
+    }
+    .searchbox input{
+      height:38px;
+      padding-left:38px;
+      border-radius:2px;
+      font-size:12px;
+    }
+    .search-icon{
+      left:13px;
+      font-size:16px;
+    }
+    .primary-btn,.ghost-btn,.ai-btn{
+      height:38px;
+      border-radius:2px;
+      padding:0 16px;
+      font-size:12px;
+    }
+
+    /* 取消每组之间横线，压缩纵向间距 */
+    .section{
+      grid-template-columns:92px minmax(0,1fr);
+      column-gap:12px;
+      row-gap:2px;
+      padding:3px 0;
+      border-top:0 !important;
+    }
+    .section:first-of-type{
+      padding-top:0;
+    }
+    .section-head{
+      padding-top:0;
+      margin:0;
+    }
+    .section-title{
+      font-size:12px;
+      line-height:24px;
+      font-weight:800;
+    }
+    .section-note{
+      display:none;
+    }
+
+    .tab-row{
+      gap:0;
+      margin:0 !important;
+      min-height:24px;
+    }
+    .tab{
+      padding:2px 0;
+      margin-right:18px;
+      font-size:12px;
+      line-height:20px;
+    }
+
+    .location-content{
+      margin:0;
+    }
+    .subgroup{
+      grid-template-columns:76px minmax(0,1fr);
+      column-gap:8px;
+      margin-top:0;
+      min-height:24px;
+    }
+    .subgroup-title{
+      padding-top:0;
+      font-size:12px;
+      line-height:24px;
+      font-weight:800;
+    }
+
+    .option-grid{
+      gap:0 15px;
+      min-height:24px;
+      align-items:center;
+    }
+    .option label{
+      min-height:24px;
+      padding:2px 0 2px 20px;
+      font-size:12px;
+      line-height:20px;
+    }
+    .option input[type="checkbox"] + label::before,
+    .option input[type="radio"] + label::before{
+      width:12px;
+      height:12px;
+      left:0;
+    }
+    .option input[type="checkbox"]:checked + label::after{
+      left:2px;
+      font-size:9px;
+    }
+    .option input[type="radio"]:checked + label::before{
+      background:radial-gradient(circle at center,var(--primary) 0 3px,#fff 4px 100%);
+    }
+
+    .inline-inputs{
+      gap:6px;
+      margin-top:2px;
+      min-height:26px;
+    }
+    .small-input{
+      width:100px;
+      height:28px;
+      border-radius:2px;
+      padding:0 8px;
+      font-size:12px;
+    }
+
+    /* 保留展开/收起功能 */
+    #advanced.collapsed{
+      display:none !important;
+    }
+    #advanced:not(.collapsed){
+      display:block !important;
+    }
+    #moreBtn{
+      display:block !important;
+      height:28px;
+      margin:4px 0 2px;
+      border:0;
+      background:#fff;
+      color:var(--primary);
+      font-size:11px;
+      font-weight:700;
+      cursor:pointer;
+    }
+
+    .footer-actions{
+      position:static;
+      margin-top:6px;
+      padding:7px 0 0;
+      border-top:0;
+      background:#fff;
+    }
+    .footer-actions .primary-btn,
+    .footer-actions .ghost-btn{
+      height:32px;
+    }
+
+    /* 结果预览压缩为单行信息区，避免占用首屏高度 */
+    .summary-panel{
+      padding:8px 14px;
+      display:grid;
+      grid-template-columns:auto 130px minmax(260px,1fr) 170px 190px;
+      align-items:center;
+      gap:10px 18px;
+      min-height:58px;
+    }
+    .summary-title{
+      grid-column:auto;
+      margin:0;
+      font-size:13px;
+      white-space:nowrap;
+    }
+    .count-box{
+      padding:7px 10px;
+      border-radius:4px;
+      margin:0;
+    }
+    .count{
+      font-size:20px;
+      line-height:22px;
+    }
+    .count-label{
+      font-size:9px;
+      margin-top:1px;
+      white-space:nowrap;
+    }
+    .summary-block{
+      padding:0;
+      min-width:0;
+    }
+    .summary-label{
+      display:none;
+    }
+    .selected-list{
+      margin:0;
+      min-height:26px;
+      align-items:center;
+      gap:4px;
+      max-height:52px;
+      overflow:auto;
+    }
+    .selected-tag{
+      padding:4px 7px;
+      font-size:10px;
+    }
+    .sort-select{
+      height:30px;
+      border-radius:2px;
+      font-size:11px;
+    }
+    .switch-row{
+      gap:6px;
+    }
+    .switch-row > div:first-child > div:first-child{
+      font-size:11px;
+    }
+    .switch-row .section-note{
+      display:none;
+    }
+    .switch{
+      width:34px;
+      height:18px;
+    }
+    .switch::after{
+      width:14px;
+      height:14px;
+      top:2px;
+      left:2px;
+    }
+    .switch.on::after{
+      left:18px;
+    }
+    #hintArea{
+      display:none;
+    }
+
+    @media (max-width:1100px){
+      .summary-panel{
+        grid-template-columns:auto 120px 1fr 150px;
+      }
+      .summary-panel .summary-block:nth-of-type(3){
+        display:none;
+      }
+    }
+    @media (max-width:760px){
+      .topbar-inner{
+        height:50px;
+      }
+      .wrap{
+        padding:0 10px 12px;
+      }
+      .main-panel{
+        padding:12px;
+      }
+      .search-row{
+        grid-template-columns:1fr;
+      }
+      .section{
+        display:block;
+        padding:5px 0;
+      }
+      .section-head{
+        margin-bottom:2px;
+      }
+      .subgroup{
+        grid-template-columns:72px minmax(0,1fr);
+      }
+      .summary-panel{
+        grid-template-columns:1fr;
+      }
+      .summary-panel > *{
+        width:100%;
+      }
+    }
+
+
+/* ===== 房源卡片基础样式 ===== */
+
+
+.sample-house-panel{
+      grid-column:1 / -1;
+      background:#fff;
+      border:1px solid #e5e8ee;
+      padding:12px 16px 16px;
+    }
+    .sample-house-head{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:16px;
+      margin-bottom:10px;
+    }
+    .sample-house-title{
+      color:#253047;
+      font-size:14px;
+      font-weight:800;
+    }
+    .sample-house-note{
+      margin-top:3px;
+      color:#929aaa;
+      font-size:10px;
+    }
+    .sample-house-total{
+      color:#5f697c;
+      font-size:11px;
+      white-space:nowrap;
+    }
+    .sample-house-grid{
+      display:grid;
+      grid-template-columns:repeat(4,minmax(0,1fr));
+      gap:9px;
+    }
+    .sample-house-card{
+      min-width:0;
+      border:1px solid #e1e5ec;
+      background:#fff;
+      transition:.16s ease;
+    }
+    .sample-house-card:hover{
+      border-color:#b8c9ef;
+      box-shadow:0 5px 14px rgba(41,64,113,.08);
+      transform:translateY(-1px);
+    }
+    .sample-house-cover{
+      height:58px;
+      padding:8px 9px;
+      display:flex;
+      align-items:flex-end;
+      justify-content:space-between;
+      background:
+        linear-gradient(135deg,rgba(36,107,253,.12),rgba(124,58,237,.16)),
+        linear-gradient(120deg,#e5edf9,#f3ebff);
+    }
+    .sample-house-number{
+      color:#40506d;
+      font-size:11px;
+      font-weight:800;
+    }
+    .sample-house-match{
+      padding:3px 6px;
+      border-radius:2px;
+      background:rgba(255,255,255,.9);
+      color:#246bfd;
+      font-size:9px;
+      font-weight:800;
+    }
+    .sample-house-body{
+      padding:8px 9px 9px;
+    }
+    .sample-house-name{
+      overflow:hidden;
+      text-overflow:ellipsis;
+      white-space:nowrap;
+      color:#263147;
+      font-size:12px;
+      font-weight:800;
+    }
+    .sample-house-meta{
+      margin:4px 0;
+      color:#7d8697;
+      font-size:9px;
+      line-height:1.55;
+    }
+    .sample-house-price{
+      color:#ed5b3b;
+      font-size:16px;
+      font-weight:900;
+    }
+    .sample-house-price small{
+      font-size:9px;
+      font-weight:500;
+    }
+    .sample-house-tags{
+      display:flex;
+      flex-wrap:wrap;
+      gap:4px;
+      margin-top:6px;
+      min-height:20px;
+    }
+    .sample-house-tag{
+      padding:3px 5px;
+      border-radius:2px;
+      background:#f2f5fa;
+      color:#596477;
+      font-size:8px;
+    }
+    .sample-house-empty{
+      grid-column:1 / -1;
+      padding:28px 16px;
+      border:1px dashed #d9dee7;
+      text-align:center;
+      color:#8b94a4;
+      font-size:11px;
+    }
+    @media (max-width:1200px){
+      .sample-house-grid{grid-template-columns:repeat(3,minmax(0,1fr));}
+    }
+    @media (max-width:820px){
+      .sample-house-grid{grid-template-columns:repeat(2,minmax(0,1fr));}
+    }
+    @media (max-width:520px){
+      .sample-house-grid{grid-template-columns:1fr;}
+    }
+
+
+/* ===== 房源列表新版样式 ===== */
+
+
+.sample-house-grid{
+      display:grid !important;
+      grid-template-columns:repeat(2,minmax(0,1fr)) !important;
+      gap:0 18px !important;
+    }
+    .sample-house-card{
+      display:grid;
+      grid-template-columns:142px minmax(0,1fr) 94px;
+      gap:14px;
+      align-items:stretch;
+      min-height:124px;
+      padding:14px 0;
+      border:0 !important;
+      border-bottom:1px solid #edf0f4 !important;
+      background:#fff;
+      box-shadow:none !important;
+      transform:none !important;
+    }
+    .sample-house-card:hover{
+      border-bottom-color:#dfe5ef !important;
+      background:#fbfcfe;
+      box-shadow:none !important;
+      transform:none !important;
+    }
+    .sample-house-cover{
+      position:relative;
+      height:96px !important;
+      min-height:96px;
+      padding:0 !important;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      border-radius:3px;
+      overflow:hidden;
+      background:none !important;
+      color:#111;
+      font-size:15px;
+      font-weight:800;
+      letter-spacing:.5px;
+    }
+    .sample-house-cover.photo-ready{
+      background:#86bdf5 !important;
+      color:#111;
+    }
+    .sample-house-cover.photo-pending{
+      background:#d7d9dd !important;
+      color:#111;
+    }
+    .sample-house-photo-text{
+      position:relative;
+      z-index:2;
+    }
+    .sample-house-number{
+      position:absolute;
+      left:7px;
+      top:7px;
+      padding:3px 5px;
+      background:rgba(255,255,255,.78);
+      color:#263147 !important;
+      font-size:8px !important;
+      font-weight:700;
+      border-radius:2px;
+    }
+    .sample-house-match{
+      position:absolute;
+      right:7px;
+      bottom:7px;
+      padding:3px 5px !important;
+      border-radius:2px !important;
+      background:rgba(255,255,255,.84) !important;
+      color:#246bfd !important;
+      font-size:8px !important;
+      font-weight:800;
+    }
+    .sample-house-body{
+      min-width:0;
+      padding:0 !important;
+      align-self:start;
+    }
+    .sample-house-name{
+      margin:1px 0 7px;
+      color:#0f2749 !important;
+      font-size:14px !important;
+      line-height:1.45;
+      font-weight:800 !important;
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
+    }
+    .sample-house-meta{
+      margin:0 0 7px !important;
+      color:#6f7889 !important;
+      font-size:10px !important;
+      line-height:1.7 !important;
+    }
+    .sample-house-submeta{
+      margin-top:6px;
+      color:#929aaa;
+      font-size:9px;
+      line-height:1.6;
+    }
+    .sample-house-tags{
+      display:flex;
+      flex-wrap:wrap;
+      gap:5px !important;
+      min-height:20px;
+      margin-top:6px !important;
+    }
+    .sample-house-tag{
+      padding:4px 6px !important;
+      background:#f2f5f8 !important;
+      color:#738096 !important;
+      font-size:8px !important;
+      border-radius:2px !important;
+    }
+    .sample-house-price-wrap{
+      align-self:start;
+      padding-top:2px;
+      text-align:right;
+      white-space:nowrap;
+    }
+    .sample-house-price{
+      color:#ff563f !important;
+      font-size:22px !important;
+      line-height:1.2;
+      font-weight:900 !important;
+    }
+    .sample-house-price small{
+      font-size:9px !important;
+      font-weight:600 !important;
+    }
+    .sample-house-source{
+      margin-top:10px;
+      color:#9ba3b1;
+      font-size:9px;
+    }
+    @media (max-width:1180px){
+      .sample-house-grid{
+        grid-template-columns:1fr !important;
+      }
+    }
+    @media (max-width:680px){
+      .sample-house-card{
+        grid-template-columns:105px minmax(0,1fr);
+        gap:10px;
+      }
+      .sample-house-cover{
+        height:82px !important;
+        min-height:82px;
+        font-size:12px;
+      }
+      .sample-house-price-wrap{
+        grid-column:2;
+        text-align:left;
+        margin-top:-2px;
+      }
+      .sample-house-price{
+        font-size:18px !important;
+      }
+    }
